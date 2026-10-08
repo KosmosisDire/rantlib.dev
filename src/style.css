@@ -1,0 +1,202 @@
+@import "./base.css";
+
+html,
+body {
+  height: 100%;
+}
+
+main {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+header,
+.install h2,
+.tabs {
+  user-select: none;
+}
+
+header img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+h1 {
+  color: var(--title);
+  font-size: clamp(3rem, 12vw, 7rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  /* Balances the letter spacing after the last letter so the word sits centered. */
+  padding-left: 0.08em;
+  display: flex;
+  align-items: baseline;
+}
+
+h1 img {
+  height: 0.7em;
+  margin-right: 0.08em;
+}
+
+header p {
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  color: var(--muted);
+}
+
+.install {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: 100%;
+}
+
+.install h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.box {
+  max-width: 100%;
+  /* Grain on top, then the R's gradient at its own angle and stops, then the dark surface. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
+    linear-gradient(154deg,
+      color-mix(in srgb, var(--r-orange) 2.5%, transparent),
+      color-mix(in srgb, var(--r-pink) 1%, transparent) 54%,
+      color-mix(in srgb, var(--r-magenta) 2.5%, transparent)),
+    linear-gradient(var(--surface-top), var(--surface-bottom));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px var(--shadow), inset 0 1px 0 rgb(255 255 255 / 0.03);
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  padding: 0 0.5rem;
+  background: var(--tabbar);
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs button {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  color: var(--fg);
+}
+
+.tabs button[aria-selected="true"] {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+}
+
+.code {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+}
+
+.commands {
+  display: grid;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Both commands share one cell, so the box keeps one width and the copy button never moves. */
+.commands pre {
+  grid-area: 1 / 1;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  text-align: left;
+  padding: 0.5rem 2.5rem 0.5rem 0;
+}
+
+.commands pre[hidden] {
+  display: block;
+  visibility: hidden;
+}
+
+.commands pre::before {
+  content: attr(data-prompt) " ";
+  color: var(--muted);
+  user-select: none;
+}
+
+.copy {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.copy:hover {
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+.copy svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.copy .icon-done,
+.copy.done .icon-copy {
+  display: none;
+}
+
+.copy.done .icon-done {
+  display: block;
+  color: var(--fg);
+}
+
+.docs {
+  margin-top: -1.5rem;
+  padding: 0.6rem 2rem;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.docs:hover {
+  background: color-mix(in srgb, var(--accent), white 12%);
+}
+

@@ -1,0 +1,7 @@
+[
+  { "title": "Start", "pages": [
+    { "title": "Introduction", "path": "introduction" },
+    { "title": "Configuration", "path": "configuration" },
+    { "title": "RANT CLI", "path": "rant-cli" }
+  ] }
+]

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Robotics Automation Networking Toolkit">
+  <title>RANT</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="/theme.js"></script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1 class="wordmark"><img src="logo.svg" alt="R">ANT</h1>
+      <p>Robotics Automation Networking Toolkit</p>
+    </header>
+
+    <section class="install" aria-labelledby="install-title">
+      <h2 id="install-title">Quick install</h2>
+      <div class="box">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tab-unix" aria-controls="cmd-unix" aria-selected="true">Linux / macOS</button>
+          <button role="tab" id="tab-windows" aria-controls="cmd-windows" aria-selected="false" tabindex="-1">Windows</button>
+        </div>
+        <div class="code">
+          <div class="commands">
+            <pre id="cmd-unix" role="tabpanel" aria-labelledby="tab-unix" data-prompt="$"><code>curl -fsSL https://get.rantlib.dev | sh</code></pre>
+            <pre id="cmd-windows" role="tabpanel" aria-labelledby="tab-windows" data-prompt="PS>" hidden><code>irm https://get.rantlib.dev | iex</code></pre>
+          </div>
+          <button class="copy" type="button" aria-label="Copy command">
+            <svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+            <svg class="icon-done" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <a class="docs" href="https://docs.rantlib.dev">Get Started</a>
+  </main>
+</body>
+</html>

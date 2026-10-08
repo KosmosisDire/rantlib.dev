@@ -1,0 +1,4 @@
+{
+  "site": { "host": "rantlib.dev", "port": 8787 },
+  "docs": { "host": "docs.rantlib.dev", "port": 8788 }
+}

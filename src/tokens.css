@@ -1,0 +1,86 @@
+/* Registered as colors so the theme switch fades them, gradients included. */
+@property --bg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --fg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --title {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --surface-top {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --surface-bottom {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --tabbar {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --shadow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+/* light-dark() follows color-scheme: the system by default, or the page's choice from theme.ts. */
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#faf8f8, #0f0e0e);
+  --fg: light-dark(#1d1a1a, #e9e7e7);
+  --title: light-dark(#2e2a2a, #d2cfcf);
+  --muted: light-dark(#6b6666, #8e8a8a);
+  --surface-top: light-dark(#ffffff, #1d1a1a);
+  --surface-bottom: light-dark(#f2eeee, #141212);
+  /* The stops of the R's bright face, from Logo.svg. */
+  --r-orange: #fa5e3d;
+  --r-pink: #cf295c;
+  --r-magenta: #af0075;
+  --tabbar: light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.25));
+  --border: light-dark(#e2dddd, #2c2929);
+  --shadow: light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.35));
+  --accent: #dc3853;
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+}
+
+:root {
+  transition: --bg 0.25s, --fg 0.25s, --title 0.25s, --muted 0.25s, --surface-top 0.25s, --surface-bottom 0.25s, --tabbar 0.25s, --border 0.25s, --shadow 0.25s;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}

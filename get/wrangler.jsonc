@@ -1,0 +1,9 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "rantlib-get",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-08",
+  "routes": [{ "pattern": "get.rantlib.dev", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false
+}

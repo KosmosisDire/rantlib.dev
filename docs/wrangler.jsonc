@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "rantlib-docs",
+  "compatibility_date": "2026-10-08",
+  "routes": [{ "pattern": "docs.rantlib.dev", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
+  "build": { "command": "node build.mjs docs", "watch_dir": ["docs/src", "docs/public", "docs/content", "src"] },
+  "assets": {
+    "directory": "../dist-docs",
+    // Any path serves the page, which then shows the doc for that path.
+    "not_found_handling": "single-page-application"
+  }
+}

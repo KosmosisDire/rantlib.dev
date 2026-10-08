@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="32.11 35.49 367 405.65">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-2 {
+        fill: url(#linear-gradient-4);
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient-3);
+      }
+
+      .cls-4 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="60.4" y1="18.87" x2="392.84" y2="935.08" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#af0075"/>
+      <stop offset="1" stop-color="#000"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="185.78" y1="261.89" x2="182.78" y2="690.53" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#77004e"/>
+      <stop offset=".84" stop-color="#13000c"/>
+      <stop offset="1" stop-color="#000"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="43.26" y1="-.22" x2="404.39" y2="450.88" xlink:href="#linear-gradient-2"/>
+    <linearGradient id="linear-gradient-4" x1="208.34" y1="30.69" x2="420.37" y2="466.77" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fa5e3d"/>
+      <stop offset=".54" stop-color="#cf295c"/>
+      <stop offset="1" stop-color="#af0075"/>
+    </linearGradient>
+  </defs>
+  <path class="cls-4" d="M269.65,152.53l-12.43-80.95c0-5.25-21.9-36.08-30.28-36.08H44.11c-6.63,0-12,5.37-12,12v381.64c0,6.63,5.37,12,12,12h298.9c8.39,0,15.19-4.25,15.19-9.5l-88.54-119.18v-159.92Z"/>
+  <path class="cls-1" d="M32.11,310.06h305.75v131.07H44.11c-6.62,0-12-5.38-12-12v-119.07h0Z"/>
+  <rect class="cls-3" x="32.11" y="144.55" width="303.09" height="61.2"/>
+  <path class="cls-2" d="M330.45,289.31c35.85-28.13,58.87-78.19,58.87-119.2s-14.46-73.4-43.39-99.55c-25.96-23.37-62.51-35.07-109.65-35.07h-21.34v109.06h8.57c29.32,0,43.98,9.61,43.98,28.83,0,21.8-12.58,32.38-37.94,32.38h-14.61v104.31l60.37,123.97c1.93,4.32,6.22,7.1,10.95,7.1h100.84c8.56,0,14.37-8.7,11.08-16.61l-67.72-135.21Z"/>
+</svg>

@@ -1,0 +1,27 @@
+{
+  "name": "rantlib-dev",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --project tsconfig.json && tsc --project get/tsconfig.json",
+    "dev": "node dev.mjs",
+    "dev:site": "node dev.mjs site",
+    "dev:docs": "node dev.mjs docs",
+    "dev:get": "wrangler dev --config get/wrangler.jsonc",
+    "deploy": "npm run deploy:site && npm run deploy:docs && npm run deploy:get",
+    "deploy:site": "wrangler deploy",
+    "deploy:docs": "wrangler deploy --config docs/wrangler.jsonc",
+    "deploy:get": "wrangler deploy --config get/wrangler.jsonc"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "marked": "^18.1.0",
+    "shiki": "^4.5.0",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.148.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "lucide": "^1.53.0"
+  }
+}
