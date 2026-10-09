@@ -20,7 +20,7 @@ const targets = {
   },
   docs: {
     out: "dist-docs",
-    copy: [["docs/public", "."], ["public/logo.svg", "logo.svg"], ["docs/content", "content"]],
+    copy: [["public/logo.svg", "logo.svg"], ["docs/content", "content"]],
     entries: { ...theme, main: "docs/src/main.ts", style: "docs/src/style.css" },
   },
 };
@@ -62,7 +62,7 @@ for (const name of names) {
   mkdirSync(staging, { recursive: true });
   for (const [from, to] of target.copy) cpSync(join(here, from), join(staging, to), { recursive: true });
 
-  if (name === "docs") generate(join(here, "docs", "content"), staging, `https://${sites.docs.host}`);
+  if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`);
 
   await build({
     absWorkingDir: here,

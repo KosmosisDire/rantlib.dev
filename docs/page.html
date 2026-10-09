@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>RANT Docs</title>
+  <title>{{title}}</title>
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <link rel="alternate" type="text/markdown" href="/llms.txt">
   <link rel="stylesheet" href="/style.css">
@@ -16,10 +16,10 @@
     <a class="brand wordmark" href="https://rantlib.dev"><img src="/logo.svg" alt="R">ANT</a>
     <input id="search" type="search" placeholder="Search" aria-label="Search the docs" autocomplete="off">
     <div id="results" aria-live="polite"></div>
-    <nav id="nav" aria-label="Documentation"></nav>
+    <nav aria-label="Documentation">{{nav}}</nav>
   </aside>
   <main>
-    <article id="content"><!--static--></article>
+    <article>{{content}}</article>
   </main>
 </body>
 </html>

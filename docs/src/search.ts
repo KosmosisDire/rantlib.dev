@@ -14,7 +14,6 @@ interface Options {
   results: HTMLElement;
   pages: { title: string; path: string }[];
   load: (path: string) => Promise<string>;
-  go: (url: string) => void;
 }
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -45,7 +44,7 @@ function snippet(text: string, terms: string[]): string {
   return html;
 }
 
-export function initSearch({ input, results, pages, load, go }: Options) {
+export function initSearch({ input, results, pages, load }: Options) {
   let index: Promise<Entry[]> | undefined;
   let found: Entry[] = [];
   let active = 0;
@@ -102,12 +101,12 @@ export function initSearch({ input, results, pages, load, go }: Options) {
       active = (active + (e.key === "ArrowDown" ? 1 : -1) + found.length) % Math.max(found.length, 1);
       render();
     } else if (e.key === "Enter" && found[active]) {
-      go(`/${found[active].path}#${found[active].id}`);
+      location.assign(`/${found[active].path}#${found[active].id}`);
       clear();
     }
   });
 
-  // The page's link handling does the navigation, so only clear the box.
+  // The link itself navigates, so only clear the box.
   results.addEventListener("click", clear);
 
   addEventListener("keydown", (e) => {
