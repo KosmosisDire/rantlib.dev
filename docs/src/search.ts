@@ -1,6 +1,4 @@
-import { Lexer } from "marked";
-import { slug } from "../slug.mjs";
-
+// One entry per heading, from search.json, which docs/generate.mjs writes.
 interface Entry {
   path: string;
   page: string;
@@ -12,28 +10,11 @@ interface Entry {
 interface Options {
   input: HTMLInputElement;
   results: HTMLElement;
-  pages: { title: string; path: string }[];
-  load: (path: string) => Promise<string>;
 }
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const termsOf = (s: string) => s.toLowerCase().split(/\s+/).filter(Boolean);
-
-// One entry per heading, holding the plain text under it.
-function sections(path: string, page: string, markdown: string): Entry[] {
-  const entries: Entry[] = [];
-  let entry: Entry | undefined;
-  for (const token of Lexer.lex(markdown)) {
-    if (token.type === "heading") {
-      entry = { path, page, heading: token.text, id: slug(token.text), text: "" };
-      entries.push(entry);
-    } else if (entry && token.type !== "space") {
-      entry.text += " " + token.raw.replace(/[`*_>#|[\]()]/g, " ").replace(/\s+/g, " ");
-    }
-  }
-  return entries;
-}
 
 function snippet(text: string, terms: string[]): string {
   const lower = text.toLowerCase();
@@ -44,13 +25,12 @@ function snippet(text: string, terms: string[]): string {
   return html;
 }
 
-export function initSearch({ input, results, pages, load }: Options) {
+export function initSearch({ input, results }: Options) {
   let index: Promise<Entry[]> | undefined;
   let found: Entry[] = [];
   let active = 0;
 
-  const loadIndex = () =>
-    (index ??= Promise.all(pages.map(async (p) => sections(p.path, p.title, await load(p.path)))).then((all) => all.flat()));
+  const loadIndex = () => (index ??= fetch("/search.json").then((r): Promise<Entry[]> => r.json()));
 
   function render() {
     const terms = termsOf(input.value);

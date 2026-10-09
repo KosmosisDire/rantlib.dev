@@ -20,7 +20,7 @@ const targets = {
   },
   docs: {
     out: "dist-docs",
-    copy: [["public/logo.svg", "logo.svg"], ["docs/content", "content"]],
+    copy: [["public/logo.svg", "logo.svg"]],
     entries: { ...theme, main: "docs/src/main.ts", style: "docs/src/style.css" },
   },
 };

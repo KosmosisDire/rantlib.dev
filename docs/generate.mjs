@@ -1,5 +1,5 @@
 // Write the built docs: an HTML page per doc, plus the plain text copies that tools can fetch.
-import { Lexer, Marked } from "marked";
+import { Marked } from "marked";
 import { bundledLanguages, createCssVariablesTheme, createHighlighter } from "shiki";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -10,13 +10,19 @@ const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace
 // Colors come from --shiki-* variables in style.css.
 const theme = createCssVariablesTheme({ name: "rant", variablePrefix: "--shiki-" });
 
-// Only the languages the pages use, since loading every grammar is slow.
-function languages(markdowns) {
-  const found = new Set();
-  new Marked().walkTokens(markdowns.flatMap((m) => Lexer.lex(m)), (token) => {
-    if (token.type === "code" && token.lang in bundledLanguages) found.add(token.lang);
-  });
-  return [...found];
+// One search entry per heading, holding the plain text under it.
+function sections(page, tokens) {
+  const entries = [];
+  let entry;
+  for (const token of tokens) {
+    if (token.type === "heading") {
+      entry = { path: page.path, page: page.title, heading: token.text, id: slug(token.text), text: "" };
+      entries.push(entry);
+    } else if (entry && token.type !== "space") {
+      entry.text += " " + token.raw.replace(/[`*_>#|[\]()]/g, " ").replace(/\s+/g, " ");
+    }
+  }
+  return entries;
 }
 
 export async function generate(contentDir, templateFile, outDir, origin) {
@@ -25,7 +31,6 @@ export async function generate(contentDir, templateFile, outDir, origin) {
   const paths = new Set(pages.map((p) => p.path));
   const sources = new Map(pages.map((p) => [p.path, readFileSync(join(contentDir, `${p.path}.md`), "utf8")]));
 
-  const shiki = await createHighlighter({ themes: [theme], langs: languages([...sources.values()]) });
   const marked = new Marked({
     renderer: {
       code({ text, lang }) {
@@ -37,6 +42,14 @@ export async function generate(contentDir, templateFile, outDir, origin) {
       },
     },
   });
+  const tokens = new Map(pages.map((p) => [p.path, marked.lexer(sources.get(p.path))]));
+
+  // Only the languages the pages use, since loading every grammar is slow.
+  const langs = new Set();
+  marked.walkTokens([...tokens.values()].flat(), (token) => {
+    if (token.type === "code" && token.lang in bundledLanguages) langs.add(token.lang);
+  });
+  const shiki = await createHighlighter({ themes: [theme], langs: [...langs] });
 
   const template = readFileSync(templateFile, "utf8");
   const nav = (current) =>
@@ -47,11 +60,12 @@ export async function generate(contentDir, templateFile, outDir, origin) {
   const page = (values) => template.replace(/\{\{(\w+)\}\}/g, (_, key) => values[key]);
 
   for (const p of pages) {
-    const content = marked.parse(sources.get(p.path));
+    const content = marked.parser(tokens.get(p.path));
     writeFileSync(join(outDir, `${p.path}.html`), page({ title: `${p.title} | RANT Docs`, nav: nav(p.path), content }));
   }
   writeFileSync(join(outDir, "404.html"), page({ title: "Not found | RANT Docs", nav: nav(""), content: "<h1>Not found</h1><p>There is no such page.</p>" }));
   writeFileSync(join(outDir, "_redirects"), `/ /${pages[0].path} 302\n`);
+  writeFileSync(join(outDir, "search.json"), JSON.stringify(pages.flatMap((p) => sections(p, tokens.get(p.path)))));
 
   // In these copies, links between pages point at the Markdown too, so following them stays plain text.
   const toMarkdownLinks = (text) =>
