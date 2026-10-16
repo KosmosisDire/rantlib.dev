@@ -3,5 +3,8 @@
     { "title": "Introduction", "path": "introduction" },
     { "title": "Configuration", "path": "configuration" },
     { "title": "Rant Cli", "path": "rant-cli" }
+  ] },
+  { "title": "Reference", "pages": [
+    { "title": "Standard types", "path": "standard-types" }
   ] }
 ]

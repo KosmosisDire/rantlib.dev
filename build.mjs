@@ -1,6 +1,7 @@
 // Bundle the TypeScript and CSS of a target into its output folder, beside its static files.
 import { build } from "esbuild";
 import { generate } from "./docs/generate.mjs";
+import { loadTypes } from "./docs/types.mjs";
 import { validate } from "./docs/validate.mjs";
 import sites from "./sites.json" with { type: "json" };
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -54,8 +55,9 @@ const names = process.argv[2] ? [process.argv[2]] : Object.keys(targets);
 for (const name of names) {
   const target = targets[name];
   if (!target) throw new Error(`Unknown target ${name}`);
+  const types = name === "docs" ? await loadTypes() : undefined;
   if (name === "docs") {
-    const problems = validate(join(here, "docs", "content"));
+    const problems = validate(join(here, "docs", "content"), types);
     if (problems.length) {
       console.error(problems.map((p) => `docs: ${p}`).join("\n"));
       process.exit(1);
@@ -68,7 +70,7 @@ for (const name of names) {
   mkdirSync(staging, { recursive: true });
   for (const [from, to] of target.copy) cpSync(join(here, from), join(staging, to), { recursive: true });
 
-  if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`);
+  if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`, types);
 
   // The link to the site being built is marked current.
   const partials = { header: header.replace(`data-site="${name}"`, `$& aria-current="true"`), copy };

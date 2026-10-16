@@ -313,9 +313,154 @@ article pre {
   user-select: none;
 }
 
+/* A types block: a row per type on the code surface, and an open type's fields sunk below it like console output. */
+.types {
+  margin-bottom: 1rem;
+  background: var(--surface-top);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.type + .type {
+  border-top: 1px solid var(--border);
+}
+
+.type summary {
+  display: grid;
+  grid-template-columns: 0.5rem 11.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.type summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The chevron points right when closed and down when open. */
+.type summary::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+
+.type[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.type summary:hover,
+.type:target > summary {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.type summary:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: -2px;
+}
+
+.type summary code {
+  font-weight: 600;
+}
+
+.type summary span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.type > div {
+  padding: 0.75rem 1rem 0.75rem 2.25rem;
+  overflow-x: auto;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.type > div p {
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+}
+
+.type table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.type th {
+  padding: 0 1.5rem 0.35rem 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.type td {
+  padding: 0.3rem 1.5rem 0.3rem 0;
+  vertical-align: baseline;
+  border-top: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.type td:last-child {
+  padding-right: 0;
+  white-space: normal;
+}
+
+/* Names and types are plain monospace here, not the boxed inline code of prose. */
+.type summary code,
+.type td code {
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.type td a {
+  text-decoration: none;
+}
+
+.type td a:hover {
+  text-decoration: underline;
+}
+
+/* An enum's options sit under their field as one group. */
+.type tr.option td {
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  color: var(--muted);
+  border-top: 0;
+}
+
+.type tr.option td:first-child {
+  padding-left: 1.25rem;
+}
+
+.type tr:not(.option) + tr.option td {
+  padding-top: 0.2rem;
+}
+
 @media (max-width: 760px) {
   .scroll {
     display: block;
+  }
+
+  .type summary {
+    grid-template-columns: 0.5rem minmax(0, 1fr);
+    row-gap: 0.15rem;
+  }
+
+  .type summary span {
+    grid-column: 2;
+    white-space: normal;
   }
 
   .sidebar {

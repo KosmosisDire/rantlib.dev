@@ -4,6 +4,7 @@ import { bundledLanguages, createCssVariablesTheme, createHighlighter } from "sh
 import { cpSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { slug } from "./slug.mjs";
+import { statement, typeNames } from "./types.mjs";
 
 const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -27,14 +28,19 @@ const colorReplacements = Object.fromEntries(Object.entries(cliColors).map(([dar
 
 const spanHtml = (t) => `<span style="color:${t.color}${t.fontStyle & 2 ? ";font-weight:bold" : ""}">${escapeHtml(t.content)}</span>`;
 
-// One search entry per heading, holding the plain text under it.
-function sections(page, tokens) {
+// One search entry per heading, holding the plain text under it, and one per standard type.
+function sections(page, tokens, types) {
   const entries = [];
   let entry;
   for (const token of tokens) {
     if (token.type === "heading") {
       entry = { path: page.path, page: page.title, heading: token.text, id: slug(token.text), text: "" };
       entries.push(entry);
+    } else if (token.type === "code" && token.lang === "types") {
+      for (const t of typeNames(token.text).map((name) => types.get(name))) {
+        const fields = (t.fields ?? []).map((f) => `${f.name} ${f.note ?? ""}`);
+        entries.push({ path: page.path, page: page.title, heading: t.name, id: t.id, text: [t.summary, t.details, ...fields].join(" ") });
+      }
     } else if (entry && token.type !== "space") {
       entry.text += " " + stripAnsi(token.raw).replace(/[`*_>#|[\]()]/g, " ").replace(/\s+/g, " ");
     }
@@ -42,7 +48,7 @@ function sections(page, tokens) {
   return entries;
 }
 
-export async function generate(contentDir, templateFile, outDir, origin) {
+export async function generate(contentDir, templateFile, outDir, origin, types) {
   const groups = JSON.parse(readFileSync(join(contentDir, "nav.json"), "utf8"));
   const pages = groups.flatMap((g) => g.pages);
   const paths = new Set(pages.map((p) => p.path));
@@ -77,9 +83,34 @@ export async function generate(contentDir, templateFile, outDir, origin) {
     return `<div class="console">${parts.join("")}</div>`;
   };
 
+  // A types block names standard types. Each is a dropdown that opens to a row per field, and per enum option.
+  const typeRef = (type) => {
+    const base = type.replace(/[<[].*$/, "");
+    return typePages.has(base) ? `<a href="/${typePages.get(base)}#${slug(base)}">${base}</a>${escapeHtml(type.slice(base.length))}` : escapeHtml(type);
+  };
+  const typeHtml = (t) => {
+    const rows = (t.alias ? [t.alias] : t.fields).flatMap((f) => [
+      { name: f.name, type: typeRef(f.type), unit: f.unit, note: f.note },
+      ...(f.options ?? []).map((o) => ({ name: o.name, type: `= ${o.value}`, unit: o.unit, note: o.note, option: true })),
+    ]);
+    const columns = [
+      !t.alias && ["Field", (r) => `<code>${r.name}</code>`],
+      ["Type", (r) => `<code>${r.type}</code>`],
+      rows.some((r) => r.unit) && ["Unit", (r) => escapeHtml(r.unit ?? "")],
+      rows.some((r) => r.note) && ["Note", (r) => escapeHtml(r.note ?? "")],
+    ].filter(Boolean);
+    const head = `<tr>${columns.map(([title]) => `<th>${title}</th>`).join("")}</tr>`;
+    const body = rows.map((r) => `<tr${r.option ? ' class="option"' : ""}>${columns.map(([, cell]) => `<td>${cell(r)}</td>`).join("")}</tr>`).join("");
+    const details = t.details ? `<p>${escapeHtml(t.details)}</p>` : "";
+    const table = rows.length ? `<table><thead>${head}</thead><tbody>${body}</tbody></table>` : "<p>No fields.</p>";
+    return `<details class="type" id="${t.id}"><summary><code>${t.name}</code><span>${escapeHtml(t.summary)}</span></summary><div>${details}${table}</div></details>`;
+  };
+  const typesHtml = (text) => `<div class="types">${typeNames(text).map((name) => typeHtml(types.get(name))).join("")}</div>`;
+
   const marked = new Marked({
     renderer: {
       code({ text, lang }) {
+        if (lang === "types") return typesHtml(text);
         return lang === "console" ? consoleHtml(text) : copyable(codeHtml(text, lang));
       },
       heading({ tokens, depth, text }) {
@@ -96,6 +127,14 @@ export async function generate(contentDir, templateFile, outDir, origin) {
     else if (token.type === "code" && token.lang in bundledLanguages) langs.add(token.lang);
   });
   const shiki = await createHighlighter({ themes: [theme], langs: [...langs] });
+
+  // The page each standard type is listed on, for the links between types.
+  const typePages = new Map();
+  for (const p of pages) {
+    marked.walkTokens(tokens.get(p.path), (token) => {
+      if (token.type === "code" && token.lang === "types") for (const name of typeNames(token.text)) typePages.set(name, p.path);
+    });
+  }
 
   const template = readFileSync(templateFile, "utf8");
   const nav = (current) =>
@@ -114,7 +153,7 @@ export async function generate(contentDir, templateFile, outDir, origin) {
   }
   writeFileSync(join(outDir, "404.html"), page({ title: "Not found | RANT Docs", nav: nav(""), content: "<h1>Not found</h1><p>There is no such page.</p>" }));
   writeFileSync(join(outDir, "_redirects"), `/ /${pages[0].path} 302\n`);
-  writeFileSync(join(outDir, "search.json"), JSON.stringify(pages.flatMap((p) => sections(p, tokens.get(p.path)))));
+  writeFileSync(join(outDir, "search.json"), JSON.stringify(pages.flatMap((p) => sections(p, tokens.get(p.path), types))));
 
   // In these copies, links between pages point at the Markdown too, so following them stays plain text.
   const toMarkdownLinks = (text) =>
@@ -122,9 +161,13 @@ export async function generate(contentDir, templateFile, outDir, origin) {
       paths.has(path) ? `](/${path}.md${anchor})` : all,
     );
 
+  // A types block becomes the definitions it names.
+  const expandTypes = (text) =>
+    text.replace(/^```types\r?\n([\s\S]*?)^```/gm, (_, list) => "```\n" + typeNames(list).map((name) => statement(types.get(name))).join("\n\n") + "\n```");
+
   const full = [];
   for (const p of pages) {
-    const text = toMarkdownLinks(stripAnsi(sources.get(p.path)));
+    const text = expandTypes(toMarkdownLinks(stripAnsi(sources.get(p.path))));
     writeFileSync(join(outDir, `${p.path}.md`), text);
     full.push(text.trim());
   }

@@ -1,10 +1,11 @@
-// Check the docs before a build: nav against files, then every link, anchor and image. Returns the problems.
+// Check the docs before a build: nav against files, then every link, anchor, image and standard type. Returns the problems.
 import { Lexer } from "marked";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { slug } from "./slug.mjs";
+import { typeNames } from "./types.mjs";
 
-export function validate(contentDir) {
+export function validate(contentDir, types) {
   const errors = [];
   const nav = JSON.parse(readFileSync(join(contentDir, "nav.json"), "utf8"));
   const paths = nav.flatMap((group) => group.pages.map((page) => page.path));
@@ -18,18 +19,29 @@ export function validate(contentDir) {
     if (!paths.includes(file)) errors.push(`${file}.md is not listed in nav.json`);
   }
 
-  // Parse every page once: its heading ids and its links.
+  // Parse every page once: its heading and type ids and its links. Each standard type is listed on one page.
   const pages = new Map();
+  const listed = new Map();
   for (const path of paths.filter((p) => files.includes(p))) {
     const ids = new Set();
     const links = [];
     const images = [];
+    const anchor = (id) => {
+      if (ids.has(id)) errors.push(`${path}.md: two headings or types share the anchor #${id}`);
+      ids.add(id);
+    };
     const walk = (tokens) => {
       for (const token of tokens) {
-        if (token.type === "heading") {
-          const id = slug(token.text);
-          if (ids.has(id)) errors.push(`${path}.md: two headings share the anchor #${id}`);
-          ids.add(id);
+        if (token.type === "heading") anchor(slug(token.text));
+        if (token.type === "code" && token.lang === "types") {
+          for (const name of typeNames(token.text)) {
+            if (!types.has(name)) errors.push(`${path}.md: ${name} is not a standard type`);
+            else if (listed.has(name)) errors.push(`${path}.md: ${name} is already listed in ${listed.get(name)}.md`);
+            else {
+              listed.set(name, path);
+              anchor(types.get(name).id);
+            }
+          }
         }
         if (token.type === "link") links.push(token.href);
         if (token.type === "image") images.push(token.href);
@@ -46,6 +58,10 @@ export function validate(contentDir) {
       if (src.startsWith("/")) errors.push(`${path}.md: image "${src}" must be a path relative to content/`);
       else if (!existsSync(join(contentDir, src))) errors.push(`${path}.md: image "${src}" is not in content/`);
     }
+  }
+
+  for (const name of types.keys()) {
+    if (!listed.has(name)) errors.push(`standard type ${name} is in no types block`);
   }
 
   for (const [path, { links }] of pages) {
