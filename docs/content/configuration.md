@@ -1,17 +1,62 @@
 # Configuration
 
-Workspaces are described in HCL.
+rant finds the programs in a workspace by itself, so most projects need very little
+configuration. This page walks through the few files there are, using the `Example`
+workspace from the [Introduction](/introduction).
 
-## Workspace
+## The workspace
+
+`workspace.rant` marks the root of a workspace. It starts out empty, which is fine.
+
+## Groups
+
+A group is a list of nodes that run together, and the normal way to start a system.
+`ExampleGroup.run` holds:
 
 ```hcl
-workspace "demo" {
-  node "camera" {
-    path    = "nodes/camera"
-    restart = true
-    env = {
-      FPS = 30
-    }
-  }
+description = "The talker and the listener"
+
+node "talker" {}
+node "listener" {}
+```
+
+`rant run ExampleGroup` starts both. Make another group with `rant new group drive`, which
+writes `DriveGroup.run`.
+
+A group can take settings, called params, and pass them to its programs:
+
+```hcl
+param "fps" {
+  type    = int
+  default = 30
+}
+
+node "camera" {
+  args = "--fps ${param.fps}"
 }
 ```
+
+Then `rant run CameraGroup fps=60` picks the value, and `rant run CameraGroup --help` lists
+the params.
+
+## Packages
+
+A package is a folder with a build file that uses Rant: `CMakeLists.txt`, `pyproject.toml`
+or a `.csproj`. `rant build` builds every package, and each program in one becomes a node.
+
+Add a `package.rant` only to change something, such as how it builds, or a program rant
+cannot find by itself:
+
+```hcl
+build = "npm run build"
+
+node "dashboard" {
+  run = "npm run serve"
+}
+```
+
+## Names
+
+- Nodes are snake_case and named after their file: `arm_controller.py`.
+- Topics and other entities are PascalCase: `FrontLidar/JointState`.
+- Groups are PascalCase and end in Group: `NavGroup`.

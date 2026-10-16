@@ -15,9 +15,7 @@ const domain = sites.site.host;
   const isDark = () => (root.dataset.theme ?? (system.matches ? "dark" : "light")) === "dark";
 
   addEventListener("DOMContentLoaded", () => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "theme-toggle";
+    const button = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
 
     const update = () => {
       const dark = isDark();
@@ -34,6 +32,5 @@ const domain = sites.site.host;
     system.addEventListener("change", update);
 
     update();
-    document.body.append(button);
   });
 })();

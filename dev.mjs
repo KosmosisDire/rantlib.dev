@@ -9,8 +9,9 @@ const names = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys
 
 const servers = names.map((name) => {
   const config = name === "site" ? "wrangler.jsonc" : `${name}/wrangler.jsonc`;
+  // Live reload refreshes an open page once the build watch has rebuilt it.
   // Elsewhere each server leads its own process group, so the group can be stopped as one.
-  return spawn(process.execPath, [wrangler, "dev", "--config", config, "--port", String(sites[name].port)], {
+  return spawn(process.execPath, [wrangler, "dev", "--config", config, "--port", String(sites[name].port), "--live-reload"], {
     stdio: "inherit",
     detached: !windows,
   });

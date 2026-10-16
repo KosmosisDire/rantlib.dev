@@ -10,7 +10,7 @@ curl -fsSL https://get.rantlib.dev | sh
 ```
 
 **Windows**
-```powershell
+```sh
 irm https://get.rantlib.dev | iex
 ```
 
@@ -19,17 +19,68 @@ irm https://get.rantlib.dev | iex
 If this is your first time using RANT it will be useful to see an example. We will create a new rant project with the template workspace:
 
 ```sh
-rant new workspace --python
+mkdir Example
+cd Example
+rant new workspace --lang python
 ```
 
 This will initialize the current directory with a workspace template. We will use python, but you may use cpp, or csharp as well.
-Now lets see what exists here:
+Now lets see what exists here. This will list all rant nodes in the workspace and will also show a list of online nodes if there are any.
+You should see two: `talker` and `listener`:
 
-```sh
-rant ls nodes --all
+```console
+$ rant ls nodes
+[1mNODES[0m
+[38;2;100;100;100m  (none)[0m
+
+[1mNOT RUNNING[0m
+  Example/listener  [38;2;154;154;154mpython[0m  [38;2;154;154;154msrc/listener.py[0m
+  Example/talker    [38;2;154;154;154mpython[0m  [38;2;154;154;154msrc/talker.py[0m
 ```
 
-This will list all rant nodes in the workspace and will also show a list of online nodes if there are any.
-You should see two: `talker` and `listener`
+The example includes one group file `ExampleGroup.run`. This defines a node group that runs together.
+Start it:
 
-Now 
+```console
+$ rant run ExampleGroup
+[1mExample/ExampleGroup[0m
+
+  [38;2;55;136;95m●[0m talker    started  [38;2;154;154;154mpid 26788   logs/talker.log[0m
+  [38;2;55;136;95m●[0m listener  started  [38;2;154;154;154mpid 62548   logs/listener.log[0m
+
+2 started, all running after 2 s
+```
+
+Now that both nodes are running we can list what is active on the network:
+
+```console
+$ rant ls
+[1mNODES[0m
+  [38;2;100;100;100mExample/ExampleGroup:[0m
+    [38;2;55;136;95m●[0m talker      [38;2;55;136;95m●[0m listener
+
+[1mENTITIES[0m
+  Pose  [38;2;154;154;154mtopic[0m
+```
+
+
+As you can see our two nodes are running, and there is a topic named `Pose`. Lets see what data is on it:
+
+```console
+$ rant sub Pose
+[1mPose[0m  [38;2;100;100;100mfrom talker     2.0 Hz  9 messages[0m
+[38;2;154;154;154mposition[0m[38;2;100;100;100m:[0m
+  [38;2;154;154;154mx[0m[38;2;100;100;100m:[0m -0.82
+  [38;2;154;154;154my[0m[38;2;100;100;100m:[0m  0.57
+[38;2;154;154;154mangle[0m[38;2;100;100;100m:[0m     16.67
+```
+
+This is great but it is not very visual. So lets open the explorer:
+
+```sh
+rant explorer
+```
+
+now we can see the list of topics (just Pose). Click on `Pose` to show it's value:
+
+![Topics screen of rant explorer showing a "Pose" topic](explorer-visualizer.png)

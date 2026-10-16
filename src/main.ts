@@ -1,7 +1,7 @@
+import { initCopy } from "./copy";
 import { localizeLinks } from "./sites";
 
 const tabs = [...document.querySelectorAll<HTMLButtonElement>(".install [role=tab]")];
-const copy = document.querySelector<HTMLButtonElement>(".install .copy")!;
 
 function select(tab: HTMLButtonElement, focus = false) {
   for (const t of tabs) {
@@ -25,17 +25,12 @@ for (const tab of tabs) {
 
 if (navigator.userAgent.includes("Windows")) select(document.getElementById("tab-windows") as HTMLButtonElement);
 
-let reset = 0;
-copy.addEventListener("click", async () => {
-  const code = document.querySelector(".install pre:not([hidden]) code")!;
-  await navigator.clipboard.writeText(code.textContent ?? "");
-  copy.classList.add("done");
-  copy.setAttribute("aria-label", "Copied");
-  clearTimeout(reset);
-  reset = setTimeout(() => {
-    copy.classList.remove("done");
-    copy.setAttribute("aria-label", "Copy command");
-  }, 1500);
-});
+initCopy(document.querySelector<HTMLButtonElement>(".install .copy")!, () => document.querySelector(".install pre:not([hidden]) code")!.textContent ?? "");
+
+// The release the install scripts pick. Without an answer the heading stays as it is.
+fetch("https://api.github.com/repos/KosmosisDire/rant-cli/releases/latest")
+  .then((r) => (r.ok ? r.json() : Promise.reject()))
+  .then((release: { tag_name: string }) => (document.getElementById("version")!.textContent = release.tag_name))
+  .catch(() => {});
 
 localizeLinks();

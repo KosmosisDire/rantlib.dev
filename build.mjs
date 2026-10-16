@@ -25,10 +25,11 @@ const targets = {
   },
 };
 
+const files = (dir) => readdirSync(dir, { recursive: true, withFileTypes: true }).filter((e) => e.isFile()).map((e) => join(e.parentPath, e.name).slice(dir.length + 1));
+
 // Bring out/ to match staging/ and touch only the files that differ. A running wrangler dev watches out/,
 // and on Windows removing a watched file makes it drop the watcher and serve a stale file list.
 function sync(staging, out) {
-  const files = (dir) => readdirSync(dir, { recursive: true, withFileTypes: true }).filter((e) => e.isFile()).map((e) => join(e.parentPath, e.name).slice(dir.length + 1));
   const wanted = new Set(files(staging));
   for (const file of wanted) {
     const from = readFileSync(join(staging, file));
@@ -42,6 +43,11 @@ function sync(staging, out) {
   }
   for (const file of files(out)) if (!wanted.has(file)) rmSync(join(out, file));
 }
+
+// Both sites share markup from src/: the header goes wherever a page has <!--header-->, a copy button wherever it has <!--copy-->.
+const partial = (name) => readFileSync(join(here, "src", `${name}.html`), "utf8").trim();
+const header = partial("header");
+const copy = partial("copy");
 
 const names = process.argv[2] ? [process.argv[2]] : Object.keys(targets);
 
@@ -63,6 +69,13 @@ for (const name of names) {
   for (const [from, to] of target.copy) cpSync(join(here, from), join(staging, to), { recursive: true });
 
   if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`);
+
+  // The link to the site being built is marked current.
+  const partials = { header: header.replace(`data-site="${name}"`, `$& aria-current="true"`), copy };
+  for (const file of files(staging).filter((f) => f.endsWith(".html"))) {
+    const path = join(staging, file);
+    writeFileSync(path, readFileSync(path, "utf8").replace(/<!--(header|copy)-->/g, (_, key) => partials[key]));
+  }
 
   await build({
     absWorkingDir: here,

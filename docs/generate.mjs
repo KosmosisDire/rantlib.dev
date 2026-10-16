@@ -1,14 +1,31 @@
 // Write the built docs: an HTML page per doc, plus the plain text copies that tools can fetch.
 import { Marked } from "marked";
 import { bundledLanguages, createCssVariablesTheme, createHighlighter } from "shiki";
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { cpSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import { slug } from "./slug.mjs";
 
 const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+// Console output may hold the CLI's color codes. The plain text copies and the search index drop them.
+const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*m/g, "");
+
 // Colors come from --shiki-* variables in style.css.
 const theme = createCssVariablesTheme({ name: "rant", variablePrefix: "--shiki-" });
+
+// The CLI's colors (cli-rant/src/ui/output.cpp) are for dark terminals. Each keeps its value in dark mode and gets a darker shade in light mode.
+const cliColors = {
+  "#9a9a9a": "#6b6666",
+  "#646464": "#a09a9a",
+  "#dc3853": "#dc3853",
+  "#37885f": "#2f7a52",
+  "#5ca67d": "#2f7a52",
+  "#cf9a3a": "#8a5a00",
+  "#d2574b": "#c0392b",
+};
+const colorReplacements = Object.fromEntries(Object.entries(cliColors).map(([dark, light]) => [dark, `light-dark(${light}, ${dark})`]));
+
+const spanHtml = (t) => `<span style="color:${t.color}${t.fontStyle & 2 ? ";font-weight:bold" : ""}">${escapeHtml(t.content)}</span>`;
 
 // One search entry per heading, holding the plain text under it.
 function sections(page, tokens) {
@@ -19,7 +36,7 @@ function sections(page, tokens) {
       entry = { path: page.path, page: page.title, heading: token.text, id: slug(token.text), text: "" };
       entries.push(entry);
     } else if (entry && token.type !== "space") {
-      entry.text += " " + token.raw.replace(/[`*_>#|[\]()]/g, " ").replace(/\s+/g, " ");
+      entry.text += " " + stripAnsi(token.raw).replace(/[`*_>#|[\]()]/g, " ").replace(/\s+/g, " ");
     }
   }
   return entries;
@@ -31,11 +48,39 @@ export async function generate(contentDir, templateFile, outDir, origin) {
   const paths = new Set(pages.map((p) => p.path));
   const sources = new Map(pages.map((p) => [p.path, readFileSync(join(contentDir, `${p.path}.md`), "utf8")]));
 
+  const codeHtml = (text, lang) => {
+    if (lang && shiki.getLoadedLanguages().includes(lang)) return shiki.codeToHtml(text, { lang, theme: "rant" });
+    return `<pre><code>${escapeHtml(text)}</code></pre>`;
+  };
+  // build.mjs puts the copy button in place of <!--copy-->. It copies the block just before it.
+  const copyable = (pre) => `<div class="code-block">${pre}<!--copy--></div>`;
+
+  // A console block: lines that start with "$ " are commands and the rest is their output, colored by its ANSI codes.
+  // Each run of commands is its own copyable part, set apart from the output, which is never copied.
+  const consoleHtml = (text) => {
+    const runs = [];
+    for (const line of text.split("\n")) {
+      const command = line.startsWith("$ ");
+      if (runs.at(-1)?.command !== command) runs.push({ command, lines: [] });
+      runs.at(-1).lines.push(command ? line.slice(2) : line);
+    }
+    const lines = (text, lang, wrap = (s) => s) =>
+      shiki
+        .codeToTokensBase(text, { lang, theme: "rant", colorReplacements })
+        .map((tokens) => wrap(tokens.map(spanHtml).join("")))
+        .join("\n");
+    const parts = runs.map(({ command, lines: run }) =>
+      command
+        ? copyable(`<pre><code>${lines(run.join("\n"), "sh", (s) => `<span class="command">${s}</span>`)}</code></pre>`)
+        : `<pre class="output"><code>${lines(run.join("\n"), "ansi")}</code></pre>`,
+    );
+    return `<div class="console">${parts.join("")}</div>`;
+  };
+
   const marked = new Marked({
     renderer: {
       code({ text, lang }) {
-        if (lang && shiki.getLoadedLanguages().includes(lang)) return shiki.codeToHtml(text, { lang, theme: "rant" });
-        return `<pre><code>${escapeHtml(text)}</code></pre>`;
+        return lang === "console" ? consoleHtml(text) : copyable(codeHtml(text, lang));
       },
       heading({ tokens, depth, text }) {
         return `<h${depth} id="${slug(text)}">${this.parser.parseInline(tokens)}</h${depth}>`;
@@ -47,7 +92,8 @@ export async function generate(contentDir, templateFile, outDir, origin) {
   // Only the languages the pages use, since loading every grammar is slow.
   const langs = new Set();
   marked.walkTokens([...tokens.values()].flat(), (token) => {
-    if (token.type === "code" && token.lang in bundledLanguages) langs.add(token.lang);
+    if (token.type === "code" && token.lang === "console") langs.add("sh").add("ansi");
+    else if (token.type === "code" && token.lang in bundledLanguages) langs.add(token.lang);
   });
   const shiki = await createHighlighter({ themes: [theme], langs: [...langs] });
 
@@ -58,6 +104,9 @@ export async function generate(contentDir, templateFile, outDir, origin) {
       .join("");
   // A function, so a $ in the content is not read as a replacement pattern.
   const page = (values) => template.replace(/\{\{(\w+)\}\}/g, (_, key) => values[key]);
+
+  // Images and other files sit beside the pages in content/ and keep their paths, so relative links work in the site and the .md copies.
+  cpSync(contentDir, outDir, { recursive: true, filter: (src) => !src.endsWith(".md") && basename(src) !== "nav.json" });
 
   for (const p of pages) {
     const content = marked.parser(tokens.get(p.path));
@@ -75,7 +124,7 @@ export async function generate(contentDir, templateFile, outDir, origin) {
 
   const full = [];
   for (const p of pages) {
-    const text = toMarkdownLinks(sources.get(p.path));
+    const text = toMarkdownLinks(stripAnsi(sources.get(p.path)));
     writeFileSync(join(outDir, `${p.path}.md`), text);
     full.push(text.trim());
   }

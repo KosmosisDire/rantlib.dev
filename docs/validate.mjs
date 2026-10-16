@@ -1,6 +1,6 @@
-// Check the docs before a build: nav against files, then every link and anchor. Returns the problems.
+// Check the docs before a build: nav against files, then every link, anchor and image. Returns the problems.
 import { Lexer } from "marked";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { slug } from "./slug.mjs";
 
@@ -23,6 +23,7 @@ export function validate(contentDir) {
   for (const path of paths.filter((p) => files.includes(p))) {
     const ids = new Set();
     const links = [];
+    const images = [];
     const walk = (tokens) => {
       for (const token of tokens) {
         if (token.type === "heading") {
@@ -31,12 +32,20 @@ export function validate(contentDir) {
           ids.add(id);
         }
         if (token.type === "link") links.push(token.href);
+        if (token.type === "image") images.push(token.href);
         walk(token.tokens ?? []);
         for (const item of token.items ?? []) walk(item.tokens ?? []);
       }
     };
     walk(Lexer.lex(readFileSync(join(contentDir, `${path}.md`), "utf8")));
     pages.set(path, { ids, links });
+
+    // An image is a remote URL or a path relative to content/, which is where the page is served from.
+    for (const src of images) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(src)) continue;
+      if (src.startsWith("/")) errors.push(`${path}.md: image "${src}" must be a path relative to content/`);
+      else if (!existsSync(join(contentDir, src))) errors.push(`${path}.md: image "${src}" is not in content/`);
+    }
   }
 
   for (const [path, { links }] of pages) {
