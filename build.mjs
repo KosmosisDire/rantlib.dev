@@ -3,6 +3,7 @@ import { build } from "esbuild";
 import { generate } from "./docs/generate.mjs";
 import { loadTypes } from "./docs/types.mjs";
 import { validate } from "./docs/validate.mjs";
+import { page } from "./explore/page.mjs";
 import sites from "./sites.json" with { type: "json" };
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -23,6 +24,12 @@ const targets = {
     out: "dist-docs",
     copy: [["public/logo.svg", "logo.svg"]],
     entries: { ...theme, main: "docs/src/main.ts", style: "docs/src/style.css" },
+  },
+  // The web explorer is a release's page as it ships, with nothing to bundle.
+  explore: {
+    out: "dist-explore",
+    copy: [],
+    entries: {},
   },
 };
 
@@ -71,6 +78,7 @@ for (const name of names) {
   for (const [from, to] of target.copy) cpSync(join(here, from), join(staging, to), { recursive: true });
 
   if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`, types);
+  if (name === "explore") await page(staging);
 
   // The link to the site being built is marked current.
   const partials = { header: header.replace(`data-site="${name}"`, `$& aria-current="true"`), copy };
@@ -79,7 +87,7 @@ for (const name of names) {
     writeFileSync(path, readFileSync(path, "utf8").replace(/<!--(header|copy)-->/g, (_, key) => partials[key]));
   }
 
-  await build({
+  if (Object.keys(target.entries).length) await build({
     absWorkingDir: here,
     entryPoints: target.entries,
     outdir: staging,
