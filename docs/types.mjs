@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { slug } from "./slug.mjs";
 
 // Bump to the newest Rant release before a deploy. RANT_SOURCE=../rant reads a checkout instead.
-const version = "0.0.28";
+const version = "0.0.29";
 const file = "src/serialize/stdtypes.c";
 const cache = join(dirname(fileURLToPath(import.meta.url)), "..", ".wrangler", "rant", `stdtypes-${version}.c`);
 
