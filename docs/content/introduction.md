@@ -79,9 +79,10 @@ $ rant sub Pose
 [38;2;154;154;154mangle[0m[38;2;100;100;100m:[0m     16.67
 ```
 
-This is great but it is not very visual. So lets open the explorer:
+This is great but it is not very visual. So lets install the explorer and open it:
 
 ```sh
+rant install explorer
 rant explorer
 ```
 

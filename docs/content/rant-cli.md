@@ -23,10 +23,18 @@ rant info Pose       # what it is and who uses it
 rant explore         # open the visual debugger
 ```
 
+## Install packages
+
+```sh
+rant ls packages --available   # what there is
+rant install explorer          # the visual debugger, or bridge, vscode
+rant remove explorer
+```
+
 ## Keep it current
 
 ```sh
-rant update          # the CLI, the explorer and your packages' Rant
+rant update          # the CLI, installed packages and your packages' Rant
 rant setup           # tab completion for your shell
 rant uninstall       # remove it all, workspaces stay
 ```
