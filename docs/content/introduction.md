@@ -54,11 +54,15 @@ $ rant run Example
 Now that both nodes are running we can list what is active on the network:
 
 ```console
-$ rant ls
+$ rant ls nodes
 [1mNODES[0m
   [38;2;100;100;100mExample/Example:[0m
     [38;2;55;136;95m●[0m talker      [38;2;55;136;95m●[0m listener
 
+[1mNOT RUNNING[0m
+[38;2;100;100;100m  (none)[0m
+
+$ rant ls entities
 [1mENTITIES[0m
   Pose  [38;2;154;154;154mtopic[0m
 ```
