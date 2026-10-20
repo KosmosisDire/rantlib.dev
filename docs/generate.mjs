@@ -6,7 +6,7 @@ import { basename, join } from "node:path";
 import { slug } from "./slug.mjs";
 import { statement, typeNames } from "./types.mjs";
 
-const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+export const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 // Console output may hold the CLI's color codes. The plain text copies and the search index drop them.
 const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*m/g, "");

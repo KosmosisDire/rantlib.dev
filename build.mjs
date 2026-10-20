@@ -4,6 +4,7 @@ import { generate } from "./docs/generate.mjs";
 import { loadTypes } from "./docs/types.mjs";
 import { validate } from "./docs/validate.mjs";
 import { page } from "./explore/page.mjs";
+import { pages } from "./pack/pages.mjs";
 import sites from "./sites.json" with { type: "json" };
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -11,7 +12,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-// Both sites load the theme toggle.
+// The sites with a header load the theme toggle.
 const theme = { theme: "src/theme.ts" };
 
 const targets = {
@@ -30,6 +31,11 @@ const targets = {
     out: "dist-explore",
     copy: [],
     entries: {},
+  },
+  pack: {
+    out: "dist-pack",
+    copy: [["public/logo.svg", "logo.svg"]],
+    entries: { ...theme, main: "pack/src/main.ts", style: "pack/src/style.css" },
   },
 };
 
@@ -79,6 +85,7 @@ for (const name of names) {
 
   if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`, types);
   if (name === "explore") await page(staging);
+  if (name === "pack") await pages(staging);
 
   // The link to the site being built is marked current.
   const partials = { header: header.replace(`data-site="${name}"`, `$& aria-current="true"`), copy };
