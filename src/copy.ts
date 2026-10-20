@@ -13,3 +13,10 @@ export function initCopy(button: HTMLButtonElement, text: () => string) {
     }, 1500);
   });
 }
+
+// Each code block's button copies the block. The $ before a command is drawn by CSS, so it is not in the copied text.
+export function initCodeBlocks() {
+  for (const button of document.querySelectorAll<HTMLButtonElement>(".code-block .copy")) {
+    initCopy(button, () => button.previousElementSibling!.textContent ?? "");
+  }
+}
