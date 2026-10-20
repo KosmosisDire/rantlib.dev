@@ -17,10 +17,72 @@ main {
   padding: 2.5rem 1rem 6rem;
 }
 
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0 0.3rem 0 0.9rem;
+  color: var(--muted);
+  background: var(--surface-top);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.filter:focus-within {
+  border-color: var(--muted);
+}
+
+.filter > svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.filter input {
+  flex: 1;
+  min-width: 0;
+  height: 2.75rem;
+  padding: 0;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  background: none;
+  border: 0;
+  outline: 0;
+}
+
+.filter input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* Holds its place while empty, so the field never changes width. */
+.filter .close {
+  visibility: hidden;
+}
+
+.filter.typed .close {
+  visibility: visible;
+}
+
 .packages {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.packages a[hidden] {
+  display: none;
+}
+
+.empty {
+  padding: 2rem 0;
+  color: var(--muted);
+  text-align: center;
 }
 
 .packages a {

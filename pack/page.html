@@ -16,7 +16,15 @@
   <div class="view">
     <div class="scroll">
       <main>
+        <div class="filter">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" placeholder="Search packages" aria-label="Search packages" autocomplete="off" spellcheck="false">
+          <button class="close" type="button" aria-label="Clear">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
         <nav class="packages" aria-label="Packages">{{list}}</nav>
+        <p class="empty" hidden>No package matches.</p>
       </main>
     </div>
     <aside class="details" aria-label="Package" inert>
