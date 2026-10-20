@@ -27,9 +27,11 @@ rant explore         # open the visual debugger
 
 ```sh
 rant ls packages --available   # what there is
-rant install explorer          # the visual debugger, or bridge, vscode
+rant install explorer          # the visual debugger
 rant remove explorer
 ```
+
+[pack.rantlib.dev](https://pack.rantlib.dev) shows every package with its README.
 
 ## Keep it current
 
