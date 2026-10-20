@@ -38,12 +38,12 @@ $ rant ls nodes
   Example/talker    [38;2;154;154;154mpython[0m  [38;2;154;154;154msrc/talker.py[0m
 ```
 
-The example includes one group file `ExampleGroup.run`. This defines a node group that runs together.
+The example includes one group file `Example.run`. This defines a node group that runs together.
 Start it:
 
 ```console
-$ rant run ExampleGroup
-[1mExample/ExampleGroup[0m
+$ rant run Example
+[1mExample/Example[0m
 
   [38;2;55;136;95m●[0m talker    started  [38;2;154;154;154mpid 26788   logs/talker.log[0m
   [38;2;55;136;95m●[0m listener  started  [38;2;154;154;154mpid 62548   logs/listener.log[0m
@@ -56,7 +56,7 @@ Now that both nodes are running we can list what is active on the network:
 ```console
 $ rant ls
 [1mNODES[0m
-  [38;2;100;100;100mExample/ExampleGroup:[0m
+  [38;2;100;100;100mExample/Example:[0m
     [38;2;55;136;95m●[0m talker      [38;2;55;136;95m●[0m listener
 
 [1mENTITIES[0m

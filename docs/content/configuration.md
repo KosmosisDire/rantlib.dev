@@ -11,7 +11,7 @@ workspace from the [Introduction](/introduction).
 ## Groups
 
 A group is a list of nodes that run together, and the normal way to start a system.
-`ExampleGroup.run` holds:
+`Example.run` holds:
 
 ```hcl
 description = "The talker and the listener"
@@ -20,8 +20,8 @@ node "talker" {}
 node "listener" {}
 ```
 
-`rant run ExampleGroup` starts both. Make another group with `rant new group drive`, which
-writes `DriveGroup.run`.
+`rant run Example` starts both. Make another group with `rant new group drive`, which
+writes `Drive.run`.
 
 A group can take settings, called params, and pass them to its programs:
 
@@ -36,7 +36,7 @@ node "camera" {
 }
 ```
 
-Then `rant run CameraGroup fps=60` picks the value, and `rant run CameraGroup --help` lists
+Then `rant run Camera fps=60` picks the value, and `rant run Camera --help` lists
 the params.
 
 ## Packages
@@ -59,4 +59,5 @@ node "dashboard" {
 
 - Nodes are snake_case and named after their file: `arm_controller.py`.
 - Topics and other entities are PascalCase: `FrontLidar/JointState`.
-- Groups are PascalCase and end in Group: `NavGroup`.
+- Groups are PascalCase: `Nav`. Names match case exactly, so the group `Nav` and the node
+  `nav` stay apart.
