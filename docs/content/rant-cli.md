@@ -15,16 +15,17 @@ rant restart ExampleGroup          # rebuild and start again
 rant stop ExampleGroup             # stop them
 ```
 
-## Run at every login
+## Run at every boot
 
 ```sh
-rant enable ExampleGroup    # run it now and every time you log in
+rant enable ExampleGroup    # run it now and every time the computer starts
 rant ls services            # what is enabled and whether it runs
 rant disable ExampleGroup   # stop it and no longer start it
 ```
 
-No admin is needed. One rant process starts what is enabled and restarts the nodes whose
-group sets `restart`.
+The first `rant enable` on a computer asks for admin once. `rant enable --login` starts a
+group when you log in instead, for one that needs your desktop. One rant process restarts
+the nodes whose group sets `restart`.
 
 ## Look at the mesh
 
