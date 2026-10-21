@@ -25,7 +25,8 @@ rant disable ExampleGroup   # stop it and no longer start it
 
 The first `rant enable` on a computer asks for admin once. `rant enable --login` starts a
 group when you log in instead, for one that needs your desktop. One rant process restarts
-the nodes whose group sets `restart`.
+the nodes whose group sets `restart`. `rant stop` and `rant restart` with nothing named leave
+enabled groups running, so name one to stop it.
 
 ## Look at the mesh
 
