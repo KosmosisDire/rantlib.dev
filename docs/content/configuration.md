@@ -39,6 +39,17 @@ node "camera" {
 Then `rant run Camera fps=60` picks the value, and `rant run Camera --help` lists
 the params.
 
+A node that should come back when it exits sets `restart`:
+
+```hcl
+restart = "on-failure"   # or "always", "never" by default
+
+node "camera" {}
+```
+
+It goes at the top of a group, on an `include` or on a `node`, and the innermost wins.
+`rant stop` stops such a node for good.
+
 ## Packages
 
 A package is a folder with a build file that uses Rant: `CMakeLists.txt`, `pyproject.toml`

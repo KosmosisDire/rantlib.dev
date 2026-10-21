@@ -15,6 +15,17 @@ rant restart ExampleGroup          # rebuild and start again
 rant stop ExampleGroup             # stop them
 ```
 
+## Run at every login
+
+```sh
+rant enable ExampleGroup    # run it now and every time you log in
+rant ls services            # what is enabled and whether it runs
+rant disable ExampleGroup   # stop it and no longer start it
+```
+
+No admin is needed. One rant process starts what is enabled and restarts the nodes whose
+group sets `restart`.
+
 ## Look at the mesh
 
 ```sh
