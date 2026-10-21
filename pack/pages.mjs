@@ -10,13 +10,13 @@ const here = dirname(fileURLToPath(import.meta.url));
 const attr = (s) => escapeHtml(s).replace(/"/g, "&quot;");
 const link = (href, text) => `<a href="${attr(href)}">${escapeHtml(text)}</a>`;
 
-// A README as GitHub shows it at the release's tag. Raw HTML is dropped, so no package can run a script on this site,
+// A README as GitHub shows it on the default branch. Raw HTML is dropped, so no package can run a script on this site,
 // and relative links and images lead to the repo.
 function readmeHtml(p) {
   const { path, text } = p.readme;
   const dir = path.slice(0, path.lastIndexOf("/") + 1);
   const resolve = (href, image) => {
-    const root = image ? `https://raw.githubusercontent.com/${p.repo}/${p.tag}/` : `https://github.com/${p.repo}/blob/${p.tag}/`;
+    const root = image ? `https://raw.githubusercontent.com/${p.repo}/HEAD/` : `https://github.com/${p.repo}/blob/HEAD/`;
     try {
       const url = href.startsWith("#") ? new URL(path + href, root) : href.startsWith("/") ? new URL(href.slice(1), root) : new URL(href, root + dir);
       return ["http:", "https:", "mailto:"].includes(url.protocol) ? url.href : undefined;

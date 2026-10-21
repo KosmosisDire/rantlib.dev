@@ -31,9 +31,10 @@ async function api(path) {
   return (await get(`https://api.github.com/repos/${path}`, headers))?.json();
 }
 
-// The README GitHub shows at ref, whatever its name and folder, as { path, text }.
-async function readme(repo, ref) {
-  const file = await api(`${repo}/readme?ref=${encodeURIComponent(ref)}`);
+// The README GitHub shows on the default branch, whatever its name and folder, as { path, text }. Main, not the release,
+// so a README change shows at the next deploy without a release.
+async function readme(repo) {
+  const file = await api(`${repo}/readme`);
   return file && { path: file.path, text: Buffer.from(file.content, file.encoding).toString("utf8") };
 }
 
@@ -60,7 +61,7 @@ async function about(name, repo) {
   if (!release) return { name, repo, problem: "It has no release yet." };
   const tag = release.tag_name;
   const version = tag.replace(/^v/, "");
-  const [text, about] = await Promise.all([get(raw(repo, tag, "package.rant")).then((r) => r?.text()), readme(repo, tag)]);
+  const [text, about] = await Promise.all([get(raw(repo, tag, "package.rant")).then((r) => r?.text()), readme(repo)]);
   if (text === undefined) return { name, repo, tag, readme: about, problem: `Its release ${tag} has no package.rant.` };
   const file = await parse(`${repo} package.rant`, text);
   const assets = release.assets.map((a) => a.name);
