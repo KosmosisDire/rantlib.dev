@@ -1,5 +1,5 @@
 // The packages rant install knows, read at build time from the package database and each package's latest release,
-// as the CLI reads them: the database at HEAD, then the package.rant at the release's tag.
+// as the CLI reads them: the database at HEAD, then the package.rant at the release's tag, its description at HEAD.
 import hcl from "hcl2-json-parser";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -61,16 +61,22 @@ async function about(name, repo) {
   if (!release) return { name, repo, problem: "It has no release yet." };
   const tag = release.tag_name;
   const version = tag.replace(/^v/, "");
-  const [text, about] = await Promise.all([get(raw(repo, tag, "package.rant")).then((r) => r?.text()), readme(repo)]);
+  const [text, head, about] = await Promise.all([
+    get(raw(repo, tag, "package.rant")).then((r) => r?.text()),
+    get(raw(repo, "HEAD", "package.rant")).then((r) => r?.text()),
+    readme(repo),
+  ]);
   if (text === undefined) return { name, repo, tag, readme: about, problem: `Its release ${tag} has no package.rant.` };
   const file = await parse(`${repo} package.rant`, text);
+  // The description is main's, as rant ls packages --available shows it, so a new one needs no release
+  const current = head === undefined ? file : await parse(`${repo} package.rant on main`, head);
   const assets = release.assets.map((a) => a.name);
   const out = {
     name,
     repo,
     tag,
     readme: about,
-    description: file.description ?? "",
+    description: current.description ?? "",
     version,
     date: release.published_at.slice(0, 10),
     release: release.html_url,
