@@ -1,6 +1,7 @@
 // Bundle the TypeScript and CSS of a target into its output folder, beside its static files.
 import { build } from "esbuild";
 import { generate } from "./docs/generate.mjs";
+import { loadPages } from "./docs/pages.mjs";
 import { loadTypes } from "./docs/types.mjs";
 import { validate } from "./docs/validate.mjs";
 import { page } from "./explore/page.mjs";
@@ -69,8 +70,9 @@ for (const name of names) {
   const target = targets[name];
   if (!target) throw new Error(`Unknown target ${name}`);
   const types = name === "docs" ? await loadTypes() : undefined;
+  const docs = name === "docs" ? await loadPages(join(here, "docs", "content")) : undefined;
   if (name === "docs") {
-    const problems = validate(join(here, "docs", "content"), types);
+    const problems = validate(join(here, "docs", "content"), types, docs);
     if (problems.length) {
       console.error(problems.map((p) => `docs: ${p}`).join("\n"));
       process.exit(1);
@@ -83,7 +85,7 @@ for (const name of names) {
   mkdirSync(staging, { recursive: true });
   for (const [from, to] of target.copy) cpSync(join(here, from), join(staging, to), { recursive: true });
 
-  if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`, types);
+  if (name === "docs") await generate(join(here, "docs", "content"), join(here, "docs", "page.html"), staging, `https://${sites.docs.host}`, types, docs);
   if (name === "explore") await page(staging);
   if (name === "pack") await pages(staging);
 

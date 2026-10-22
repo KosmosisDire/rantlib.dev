@@ -1,26 +1,11 @@
 // The standard types, read from the Rant release these docs describe. Each definition is schema text: the comment
 // above the type describes it, and the comment after a field or enum option gives its [unit] and then a note.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { releaseFile } from "./source.mjs";
 import { slug } from "./slug.mjs";
 
 // Bump to the newest Rant release before a deploy. RANT_SOURCE=../rant reads a checkout instead.
 const version = "0.0.33";
 const file = "src/serialize/stdtypes.c";
-const cache = join(dirname(fileURLToPath(import.meta.url)), "..", ".wrangler", "rant", `stdtypes-${version}.c`);
-
-async function source() {
-  if (process.env.RANT_SOURCE) return readFileSync(join(process.env.RANT_SOURCE, file), "utf8");
-  if (existsSync(cache)) return readFileSync(cache, "utf8");
-  const url = `https://raw.githubusercontent.com/KosmosisDire/Rant/v${version}/${file}`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  const text = await response.text();
-  mkdirSync(dirname(cache), { recursive: true });
-  writeFileSync(cache, text);
-  return text;
-}
 
 const unitAndNote = (comment) => {
   const [, unit = "", note = comment] = comment.match(/^\[([^\]]*)\]\s*(.*)$/) ?? [];
@@ -106,7 +91,7 @@ export const typeNames = (block) => block.split(/\s+/).filter(Boolean);
 
 // Every standard type by name, in the order of the library's table.
 export async function loadTypes() {
-  const text = await source();
+  const text = await releaseFile("KosmosisDire/Rant", version, file, "RANT_SOURCE");
   const table = text.slice(text.indexOf("i_rant_std_table[] = {"), text.indexOf("};", text.indexOf("i_rant_std_table[] = {")));
   const types = new Map();
   // An entry is { "Name", "text" "text" }, the C string literals joined.

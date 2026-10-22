@@ -6,5 +6,11 @@
   ] },
   { "title": "Reference", "pages": [
     { "title": "Standard types", "path": "standard-types" }
+  ] },
+  { "title": "HMI", "pages": [
+    { "title": "Project files", "path": "hmi-files", "from": "hmi/files.md" },
+    { "title": "Reference", "path": "hmi-reference", "from": "hmi/reference.md" },
+    { "title": "Math", "path": "hmi-math", "from": "hmi/math.md" },
+    { "title": "Status", "path": "hmi-status", "from": "hmi/status.md" }
   ] }
 ]

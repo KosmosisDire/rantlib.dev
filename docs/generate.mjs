@@ -48,11 +48,10 @@ function sections(page, tokens, types) {
   return entries;
 }
 
-export async function generate(contentDir, templateFile, outDir, origin, types) {
-  const groups = JSON.parse(readFileSync(join(contentDir, "nav.json"), "utf8"));
-  const pages = groups.flatMap((g) => g.pages);
+// `docs` is what loadPages read: the nav's groups, each page in them and its Markdown.
+export async function generate(contentDir, templateFile, outDir, origin, types, docs) {
+  const { groups, pages, sources } = docs;
   const paths = new Set(pages.map((p) => p.path));
-  const sources = new Map(pages.map((p) => [p.path, readFileSync(join(contentDir, `${p.path}.md`), "utf8")]));
 
   const codeHtml = (text, lang) => {
     if (lang && shiki.getLoadedLanguages().includes(lang)) return shiki.codeToHtml(text, { lang, theme: "rant" });
