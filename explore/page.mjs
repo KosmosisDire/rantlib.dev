@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Bump to the newest explorer release before a deploy. EXPLORER_WEB=../explorer-rant/bin/web takes a build instead.
-const version = "0.0.21";
+const version = "0.0.22";
 const cache = join(dirname(fileURLToPath(import.meta.url)), "..", ".wrangler", "explorer", `rant-explorer-${version}-web.zip`);
 
 async function zip() {
