@@ -4,7 +4,7 @@ import { releaseFile } from "./source.mjs";
 import { slug } from "./slug.mjs";
 
 // Bump to the newest Rant release before a deploy. RANT_SOURCE=../rant reads a checkout instead.
-const version = "0.0.33";
+const version = "0.0.34";
 const file = "src/serialize/stdtypes.c";
 
 const unitAndNote = (comment) => {
