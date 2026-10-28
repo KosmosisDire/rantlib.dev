@@ -8,9 +8,13 @@
     { "title": "Standard types", "path": "standard-types" }
   ] },
   { "title": "HMI", "pages": [
-    { "title": "Project files", "path": "hmi-files", "from": "hmi/files.md" },
-    { "title": "Reference", "path": "hmi-reference", "from": "hmi/reference.md" },
-    { "title": "Math", "path": "hmi-math", "from": "hmi/math.md" },
+    { "title": "Getting started", "path": "hmi-start", "from": "hmi/start.md" },
+    { "title": "Project", "path": "hmi-project", "from": "hmi/project.md" },
+    { "title": "Pages", "path": "hmi-pages", "from": "hmi/pages.md" },
+    { "title": "Components", "path": "hmi-components", "from": "hmi/components.md" },
+    { "title": "Events", "path": "hmi-events", "from": "hmi/events.md" },
+    { "title": "Code", "path": "hmi-code", "from": "hmi/code.md" },
+    { "title": "Deploy", "path": "hmi-deploy", "from": "hmi/deploy.md" },
     { "title": "Status", "path": "hmi-status", "from": "hmi/status.md" }
   ] }
 ]
