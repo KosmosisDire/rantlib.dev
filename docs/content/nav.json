@@ -2,6 +2,9 @@
   { "title": "Start", "pages": [
     { "title": "Introduction", "path": "introduction" },
     { "title": "Configuration", "path": "configuration" },
+    { "title": "Workspaces", "path": "workspaces" },
+    { "title": "Packages", "path": "packages" },
+    { "title": "Run groups", "path": "run-groups" },
     { "title": "Rant Cli", "path": "rant-cli" }
   ] },
   { "title": "Reference", "pages": [
