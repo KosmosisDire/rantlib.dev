@@ -24,7 +24,7 @@ cd Example
 rant new workspace --lang python
 ```
 
-This will initialize the current directory with a workspace template. We will use python, but you may use cpp, or csharp as well.
+This will initialize the current directory with a workspace template (it does not create a new directory for the workspace). We will use python, but you may use cpp, or csharp as well.
 Now lets see what exists here. This will list all rant nodes in the workspace and will also show a list of online nodes if there are any.
 You should see two: `talker` and `listener`:
 
