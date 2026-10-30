@@ -1,106 +1,30 @@
-// The standard types, read from the Rant release these docs describe. Each definition is schema text: the comment
-// above the type describes it, and the comment after a field or enum option gives its [unit] and then a note.
+// The standard types, read from the Rant release these docs describe: types/stdtypes.json, which rant_codegen writes
+// from the schema file. The comment above a type describes it, and the one after a member gives its unit and note.
 import { releaseFile } from "./source.mjs";
 import { slug } from "./slug.mjs";
 
 // Bump to the newest Rant release before a deploy. RANT_SOURCE=../rant reads a checkout instead.
 const version = "0.0.40";
-const file = "src/serialize/stdtypes.c";
+const file = "types/stdtypes.json";
 
-const unitAndNote = (comment) => {
-  const [, unit = "", note = comment] = comment.match(/^\[([^\]]*)\]\s*(.*)$/) ?? [];
-  return { unit, note };
-};
-
-// { name, id, summary, details } plus fields for a struct, or alias for a type such as i64. A field, an enum
-// option and an alias have a type or a value, and a unit and a note when commented. An enum field has options.
-function parse(name, text) {
-  const fail = (why) => {
-    throw new Error(`standard type ${name}: ${why}`);
-  };
-  const tokens = [];
-  const comments = [];
-  text.split("\n").forEach((line, row) => {
-    for (const [, comment, word] of line.matchAll(/--\s*(.*\S)?|(\w+|\S)/g)) {
-      if (word) tokens.push({ text: word, row });
-      else comments.push({ text: comment ?? "", row });
-    }
-  });
-
-  let i = 0;
-  const peek = () => tokens[i]?.text;
-  const take = (want) => {
-    if (i >= tokens.length || (want !== undefined && peek() !== want)) fail(`expected ${want ?? "more"} after ${tokens[i - 1]?.text}`);
-    return tokens[i++].text;
-  };
-  // A comment belongs to the last field, option or alias that starts on its row.
-  const items = [];
-  const item = (props) => {
-    const it = { ...props, row: tokens[i].row };
-    items.push(it);
-    return it;
-  };
-
-  // A type as written, such as string<30>, Double3[] or enum<u8> with its options.
-  const type = () => {
-    let text = take();
-    if (peek() === "<") text += take() + take() + take(">");
-    let options;
-    if (text.startsWith("enum")) {
-      options = [];
-      take("{");
-      while (peek() !== "}") {
-        const option = item({ name: take() });
-        option.value = peek() === "=" ? (take(), Number(take())) : (options.at(-1)?.value ?? -1) + 1;
-        if (peek() === ",") take();
-        options.push(option);
-      }
-      take("}");
-    }
-    while (peek() === "[") text += take() + (peek() === "]" ? "" : take()) + take("]");
-    return options ? { type: text, options } : { type: text };
-  };
-
-  const first = tokens[0]?.row ?? fail("has no type");
-  const [summary = fail("has no description above it"), ...details] = comments.filter((c) => c.row < first).map((c) => c.text);
-  const result = { name, id: slug(name), summary, details: details.join(" ") };
-  if (peek() === "{") {
-    take();
-    result.fields = [];
-    while (peek() !== "}") {
-      const field = item({ name: take() });
-      take(":");
-      Object.assign(field, type());
-      if (peek() === ",") take();
-      result.fields.push(field);
-    }
-    take("}");
-  } else Object.assign((result.alias = item({})), type());
-  if (i < tokens.length) fail(`expected the end after ${tokens[i - 1].text}`);
-
-  for (const c of comments.filter((c) => c.row >= first)) {
-    const owner = items.findLast((it) => it.row === c.row) ?? fail(`the comment "${c.text}" follows no field`);
-    Object.assign(owner, unitAndNote(c.text));
-  }
-  for (const it of items) delete it.row;
-  return result;
+// { name, id, summary, details } plus fields for a struct, or alias for a type such as i64 or an enum, whose alias
+// has options. A field, an option and an alias have a type or a value, and a unit and a note.
+function shape({ name, kind, backing, about, members }) {
+  const [summary, ...details] = about;
+  if (!summary) throw new Error(`standard type ${name} has no description above it`);
+  const type = { name, id: slug(name), summary, details: details.join(" ") };
+  if (kind === "struct") return { ...type, fields: members };
+  if (kind === "enum") return { ...type, alias: { type: `enum<${backing}>`, options: members } };
+  return { ...type, alias: members[0] };
 }
 
 // A types block on a docs page lists the names of the standard types it shows.
 export const typeNames = (block) => block.split(/\s+/).filter(Boolean);
 
-// Every standard type by name, in the order of the library's table.
+// Every standard type by name, in the order of the schema file.
 export async function loadTypes() {
-  const text = await releaseFile("KosmosisDire/Rant", version, file, "RANT_SOURCE");
-  const table = text.slice(text.indexOf("i_rant_std_table[] = {"), text.indexOf("};", text.indexOf("i_rant_std_table[] = {")));
-  const types = new Map();
-  // An entry is { "Name", "text" "text" }, the C string literals joined.
-  for (const [, name, literals] of table.matchAll(/\{\s*"(\w+)",((?:\s*"(?:[^"\\]|\\.)*")+)\s*\}/g)) {
-    const definition = [...literals.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map(([, s]) => s.replace(/\\(.)/g, (_, c) => (c === "n" ? "\n" : c))).join("");
-    types.set(name, parse(name, definition));
-  }
-  if (!types.size) throw new Error(`no standard types found in ${file}`);
-  return types;
+  const { types } = JSON.parse(await releaseFile("KosmosisDire/Rant", version, file, "RANT_SOURCE"));
+  return new Map(types.map((t) => [t.name, shape(t)]));
 }
 
 // The type as a schema statement, for the plain text copies of the docs.
