@@ -17,16 +17,29 @@ rant stop ExampleGroup             # stop them
 
 ## Run at every boot
 
-```sh
-rant enable ExampleGroup    # run it now and every time the computer starts
-rant ls services            # what is enabled and whether it runs
-rant disable ExampleGroup   # stop it and no longer start it
+A workspace lists its services in `workspace.rant`, each a group with its param values:
+
+```hcl
+service "ExampleGroup" {}
+service "Hmi" {
+  project = "line-hmi"
+}
 ```
 
-The first `rant enable` on a computer asks for admin once. `rant enable --login` starts a
-group when you log in instead, for one that needs your desktop. One rant process restarts
-the nodes whose group sets `restart`. `rant stop` and `rant restart` with nothing named leave
-enabled groups running, so name one to stop it.
+```sh
+rant run                    # start every service now
+rant enable                 # and every time the computer starts
+rant enable ExampleGroup    # add a group to the services, then enable
+rant ls services            # each service and whether it runs
+rant disable ExampleGroup   # stop it and take it off the list
+rant disable                # stop them all and no longer start them
+```
+
+The first `rant enable` on a computer asks for admin once. `rant enable --login` starts the
+services when you log in instead, for one that needs your desktop. Outside every workspace
+the list is `~/.rant/services.rant`. One rant process restarts the nodes whose group sets
+`restart`. `rant stop` and `rant restart` with nothing named leave the services of an
+enabled workspace running, so name one to stop it.
 
 ## Look at the mesh
 
@@ -41,15 +54,24 @@ rant explore         # open the visual debugger
 ```sh
 rant ls packages --available   # what there is
 rant install explorer          # the visual debugger
+rant install someone/rant-tool # any GitHub repo, or its link
 rant remove explorer
 ```
 
 [pack.rantlib.dev](https://pack.rantlib.dev) shows every package with its README.
 
+## Add libraries
+
+```sh
+rant add                       # Rant into the package here
+rant add rant cam --version 0.0.39
+rant ls libraries              # what each package uses
+```
+
 ## Keep it current
 
 ```sh
-rant update          # the CLI, installed packages and your packages' Rant
+rant update          # the CLI, installed packages and your packages' libraries
 rant setup           # tab completion for your shell
 rant uninstall       # remove it all, workspaces stay
 ```
