@@ -54,8 +54,10 @@ function details(p) {
   const facts = [
     p.version && ["Version", link(p.release, p.version)],
     p.date && ["Released", p.date],
+    p.languages && ["Languages", escapeHtml(p.languages.join(", "))],
     p.platforms?.length && ["Platforms", escapeHtml(p.platforms.join(", "))],
     p.vsix && ["Editor", "VS Code, or another with <code>--editor</code>"],
+    p.skill && ["Skill", "Offered to the AI coding agents found, such as Claude Code"],
     p.nodes?.length && ["Nodes", p.nodes.map((n) => `<code>${escapeHtml(n)}</code>`).join(", ")],
     ["Source", link(`https://github.com/${p.repo}`, p.repo)],
   ].filter(Boolean);
@@ -65,7 +67,7 @@ function details(p) {
     p.description && `<p class="lead">${escapeHtml(p.description)}</p>`,
     p.problem
       ? `<p class="problem">${escapeHtml(p.problem)} <code>rant install</code> cannot install it until a release fixes that.</p>`
-      : `<div class="code-block"><code>rant install ${p.name}</code><!--copy--></div>`,
+      : `<div class="code-block"><code>rant ${p.languages ? "add" : "install"} ${p.name}</code><!--copy--></div>`,
     `<dl class="facts">${facts.map(([term, value]) => `<dt>${term}</dt><dd>${value}</dd>`).join("")}</dl>`,
     p.readme && readmeHtml(p),
     "</section>",
