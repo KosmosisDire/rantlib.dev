@@ -26,6 +26,7 @@ Float2 Float3 Float4
 Double2 Double3 Double4
 Int2 Int3 Int4
 Matrix3x3 Matrix4x4
+Covariance3 Covariance6
 ```
 
 ## Position and orientation
@@ -35,37 +36,65 @@ Pose Pose2D
 Transform Transform2D
 Quaternion
 GeoPoint
+PoseWithCovariance
 ```
 
 ## Motion and force
 
 ```types
 Twist Twist2D
+Accel Accel2D
 Wrench Wrench2D
+TwistWithCovariance
+Odometry
 ```
 
 ## 3D shapes
 
 ```types
-AlignedBox OrientedBox Plane Segment Sphere Capsule Cylinder Cone Polygon
+AlignedBox OrientedBox Plane Segment Ray Sphere Capsule Cylinder Cone Polygon Prism
+Polyline Path
 ```
 
 ## 2D shapes
 
 ```types
-AlignedBox2D OrientedBox2D Plane2D Segment2D Circle Capsule2D Polygon2D
+AlignedBox2D OrientedBox2D Plane2D Segment2D Ray2D Circle Capsule2D Polygon2D
+Polyline2D Path2D
 ```
 
-## Sensors and robots
+## Sensors
 
 ```types
-CameraIntrinsics JointState JointNames
+CameraIntrinsics DistortionModel
+Imu LaserScan
+RangeReading RangeKind
+GnssFix GnssStatus
+Detection2D Detection3D
+```
+
+## Robots
+
+```types
+JointState JointNames
+JointTrajectory JointTrajectoryPoint
+Inertia
+```
+
+## Point clouds, meshes and grids
+
+```types
+PointCloud PointField Mesh
+Grid GridField
+ScalarKind Tensor
 ```
 
 ## Images and video
 
 ```types
-Image VideoFrame ExternalVideoStream
+Image ImageFormat
+VideoFrame VideoCodec
+ExternalVideoStream VideoStreamKind
 ```
 
 ## Time and ids
@@ -77,5 +106,5 @@ Timestamp Duration Uuid
 ## Other
 
 ```types
-Color Uri Empty
+Color Uri File Empty
 ```

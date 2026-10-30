@@ -82,24 +82,24 @@ export async function generate(contentDir, templateFile, outDir, origin, types, 
     return `<div class="console">${parts.join("")}</div>`;
   };
 
-  // A types block names standard types. Each is a dropdown that opens to a row per field, and per enum option.
+  // A types block names standard types. Each is a dropdown that opens to a row per field, or per option of an enum.
   const typeRef = (type) => {
     const base = type.replace(/[<[].*$/, "");
     return typePages.has(base) ? `<a href="/${typePages.get(base)}#${slug(base)}">${base}</a>${escapeHtml(type.slice(base.length))}` : escapeHtml(type);
   };
   const typeHtml = (t) => {
-    const rows = (t.alias ? [t.alias] : t.fields).flatMap((f) => [
-      { name: f.name, type: typeRef(f.type), unit: f.unit, note: f.note },
-      ...(f.options ?? []).map((o) => ({ name: o.name, type: `= ${o.value}`, unit: o.unit, note: o.note, option: true })),
-    ]);
+    const options = t.alias?.options;
+    const rows = options
+      ? options.map((o) => ({ name: o.name, type: String(o.value), unit: o.unit, note: o.note }))
+      : (t.alias ? [t.alias] : t.fields).map((f) => ({ name: f.name, type: typeRef(f.type), unit: f.unit, note: f.note }));
     const columns = [
-      !t.alias && ["Field", (r) => `<code>${r.name}</code>`],
-      ["Type", (r) => `<code>${r.type}</code>`],
+      options ? ["Option", (r) => `<code>${r.name}</code>`] : !t.alias && ["Field", (r) => `<code>${r.name}</code>`],
+      [options ? "Value" : "Type", (r) => `<code>${r.type}</code>`],
       rows.some((r) => r.unit) && ["Unit", (r) => escapeHtml(r.unit ?? "")],
       rows.some((r) => r.note) && ["Note", (r) => escapeHtml(r.note ?? "")],
     ].filter(Boolean);
     const head = `<tr>${columns.map(([title]) => `<th>${title}</th>`).join("")}</tr>`;
-    const body = rows.map((r) => `<tr${r.option ? ' class="option"' : ""}>${columns.map(([, cell]) => `<td>${cell(r)}</td>`).join("")}</tr>`).join("");
+    const body = rows.map((r) => `<tr>${columns.map(([, cell]) => `<td>${cell(r)}</td>`).join("")}</tr>`).join("");
     const details = t.details ? `<p>${escapeHtml(t.details)}</p>` : "";
     const table = rows.length ? `<table><thead>${head}</thead><tbody>${body}</tbody></table>` : "<p>No fields.</p>";
     return `<details class="type" id="${t.id}"><summary><code>${t.name}</code><span>${escapeHtml(t.summary)}</span></summary><div>${details}${table}</div></details>`;

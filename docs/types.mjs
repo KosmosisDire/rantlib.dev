@@ -4,7 +4,7 @@ import { releaseFile } from "./source.mjs";
 import { slug } from "./slug.mjs";
 
 // Bump to the newest Rant release before a deploy. RANT_SOURCE=../rant reads a checkout instead.
-const version = "0.0.38";
+const version = "0.0.39";
 const file = "src/serialize/stdtypes.c";
 
 const unitAndNote = (comment) => {
@@ -108,16 +108,15 @@ export function statement(type) {
   const note = (it) => [it.unit && `[${it.unit}]`, it.note].filter(Boolean).join(" ");
   const comment = (code, it) => (note(it) ? `${code}  -- ${note(it)}` : code);
   const lines = [`-- ${type.summary}`, ...(type.details ? [`-- ${type.details}`] : [])];
+  const block = (head, rows) => {
+    const width = Math.max(...rows.map(([code]) => code.length));
+    return [...lines, head, ...rows.map(([code, it]) => (note(it) ? comment(code.padEnd(width), it) : code)), "}"].join("\n");
+  };
+  if (type.alias?.options) return block(`${type.name} = ${type.alias.type} {`, type.alias.options.map((o) => [`  ${o.name} = ${o.value}`, o]));
   if (type.alias) return [...lines, comment(`${type.name} = ${type.alias.type}`, type.alias)].join("\n");
-  if (!type.fields.some((f) => note(f) || f.options)) {
+  if (!type.fields.some((f) => note(f))) {
     const fields = type.fields.map((f) => `${f.name}: ${f.type}`).join(", ");
     return [...lines, `${type.name} { ${fields}${fields ? " " : ""}}`].join("\n");
   }
-  const rows = type.fields.flatMap((f) => [
-    [`  ${f.name}: ${f.type}${f.options ? " {" : ""}`, f],
-    ...(f.options ?? []).map((o) => [`    ${o.name} = ${o.value}`, o]),
-    ...(f.options ? [["  }", {}]] : []),
-  ]);
-  const width = Math.max(...rows.map(([code]) => code.length));
-  return [...lines, `${type.name} {`, ...rows.map(([code, it]) => (note(it) ? comment(code.padEnd(width), it) : code)), "}"].join("\n");
+  return block(`${type.name} {`, type.fields.map((f) => [`  ${f.name}: ${f.type}`, f]));
 }
