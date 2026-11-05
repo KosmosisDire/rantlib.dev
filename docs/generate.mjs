@@ -14,7 +14,7 @@ const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*m/g, "");
 // Colors come from --shiki-* variables in style.css.
 const theme = createCssVariablesTheme({ name: "rant", variablePrefix: "--shiki-" });
 
-// The CLI's colors (cli-rant/src/ui/output.cpp) are for dark terminals. Each keeps its value in dark mode and gets a darker shade in light mode.
+// The CLI's colors (cli-rant/crates/cli/src/output/mod.rs) are for dark terminals. Each keeps its value in dark mode and gets a darker shade in light mode.
 const cliColors = {
   "#9a9a9a": "#6b6666",
   "#646464": "#a09a9a",

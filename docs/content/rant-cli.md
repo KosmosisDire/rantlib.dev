@@ -9,7 +9,7 @@ lists every command, and `rant <command> --help` explains one.
 rant new workspace --lang python   # start a project, or --lang cpp, csharp
 rant build                         # build it
 rant run ExampleGroup              # start a group of nodes
-rant ls                            # see what is running
+rant ls nodes                      # see what is running
 rant log ExampleGroup -f           # follow what the nodes print
 rant restart ExampleGroup          # rebuild and start again
 rant stop ExampleGroup             # stop them
@@ -44,10 +44,25 @@ enabled workspace running, so name one to stop it.
 ## Look at the mesh
 
 ```sh
+rant ls              # every topic, variable, function and task
 rant sub Pose        # watch a topic
+rant sub Grip        # watch every call to a function or task
 rant info Pose       # what it is and who uses it
 rant explore         # open the visual debugger
 ```
+
+## Record and play
+
+```sh
+rant record 'Cam/*' Odom             # until Ctrl-C, or --duration 60
+rant ls recordings
+rant play 2026-11-05_09-30-00Z --speed 2
+rant play 2026-11-05_09-30-00Z --prefix Replay
+```
+
+A recording is an MCAP file in the workspace's `recordings` folder. Play moves every
+recorded time to now, faster or slower with `--speed`. It refuses names a live node sends,
+so play beside them under `--prefix` or on another `--domain`.
 
 ## Install packages
 
