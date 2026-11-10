@@ -7,13 +7,84 @@
   display: flex;
 }
 
+/* The categories sidebar on the left, the list centered in the room left beside it. */
 .view .scroll {
+  flex: 1;
   min-width: 0;
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  align-items: start;
+}
+
+/* Sticky inside the scrolling list, so the wheel over it still scrolls the list. */
+.sidebar {
+  position: sticky;
+  top: 0;
+  padding: 2.5rem 0.75rem;
+  user-select: none;
+}
+
+.sidebar h2 {
+  margin-bottom: 0.5rem;
+  padding: 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.categories button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.75rem;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.categories button:hover {
+  color: var(--fg);
+}
+
+.categories button[aria-pressed="true"] {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.categories svg {
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+
+.categories .title {
+  flex: 1;
+}
+
+.categories .count {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.8rem;
 }
 
 main {
-  max-width: 44rem;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 64rem;
+  justify-self: center;
   padding: 2.5rem 1rem 6rem;
 }
 
@@ -69,9 +140,10 @@ main {
   visibility: visible;
 }
 
+/* Two columns where the list has room for them, so also one while the package sidebar is open on a narrower screen. */
 .packages {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
   gap: 0.25rem;
 }
 
@@ -236,6 +308,25 @@ main {
   color: var(--muted);
 }
 
+.body {
+  container-type: inline-size;
+}
+
+/* Two facts to a row where the sidebar is wide enough. */
+@container (min-width: 30rem) {
+  .facts {
+    grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
+  }
+
+  .facts dd {
+    overflow-wrap: anywhere;
+  }
+
+  .facts dd:nth-of-type(odd) {
+    padding-right: 1.5rem;
+  }
+}
+
 .readme {
   margin-top: 2rem;
   padding-top: 0.5rem;
@@ -320,6 +411,29 @@ main {
 
 /* A phone has no room beside the list, so the sidebar comes up over it as a sheet. */
 @media (max-width: 760px) {
+  /* The categories become a row of buttons above the list. */
+  .view .scroll {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: static;
+    padding: 1.25rem 1rem 0;
+  }
+
+  .sidebar h2 {
+    display: none;
+  }
+
+  .categories {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  main {
+    padding-top: 1rem;
+  }
+
   .details {
     position: fixed;
     inset: var(--header-height) 0 0 0;

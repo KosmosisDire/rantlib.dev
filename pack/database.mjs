@@ -26,11 +26,23 @@ async function parse(file, text) {
   }
 }
 
-async function api(path) {
+async function request(url) {
   const token = process.env.GITHUB_TOKEN;
-  const headers = { accept: "application/vnd.github+json", ...(token && { authorization: `Bearer ${token}` }) };
-  return (await get(`https://api.github.com/repos/${path}`, headers))?.json();
+  return get(url, { accept: "application/vnd.github+json", ...(token && { authorization: `Bearer ${token}` }) });
 }
+
+const api = async (path) => (await request(`https://api.github.com/repos/${path}`))?.json();
+
+// When the first release came out. GitHub lists releases newest first, so it is on the last page.
+async function firstReleased(repo) {
+  const page = await request(`https://api.github.com/repos/${repo}/releases?per_page=100`);
+  const last = page.headers.get("link")?.match(/<([^>]+)>; rel="last"/)?.[1];
+  const releases = await (last ? await request(last) : page).json();
+  return releases.filter((r) => !r.draft && r.published_at).map((r) => r.published_at).sort()[0];
+}
+
+// As May 26, 2026, the day it was in UTC.
+export const day = (time) => new Date(time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
 // The README GitHub shows on the default branch, whatever its name and folder, as { path, text }. Main, not the release,
 // so a README change shows at the next deploy without a release.
@@ -46,7 +58,8 @@ const platformName = (platform) => {
   return systems[system] && arch ? `${systems[system]} ${arch}` : platform;
 };
 
-// { name, repo, tag, description, version, date, release, platforms, vsix, skill, nodes, languages, readme }. A problem
+// { name, repo, tag, description, version, released, updated, release, platforms, vsix, skill, languages, readme }.
+// released is the first release's day and updated the latest release's time. A problem
 // says why rant install or rant add could not take it, and then some of the rest may be missing.
 async function about(repo) {
   const head = await get(raw(repo, "HEAD", "package.rant")).then((r) => r?.text());
@@ -55,12 +68,12 @@ async function about(repo) {
   const current = await parse(`${repo} package.rant`, head);
   const name = current.name;
   if (typeof name !== "string" || !/^[a-z][a-z0-9_]*$/.test(name)) throw new Error(`packages.rant: ${repo} gives no package name in its package.rant`);
-  const [release, about] = await Promise.all([api(`${repo}/releases/latest`), readme(repo)]);
+  const [release, first, about] = await Promise.all([api(`${repo}/releases/latest`), firstReleased(repo), readme(repo)]);
   const out = { name, repo, readme: about, description: current.description ?? "" };
   if (!release) return { ...out, problem: "It has no release yet." };
   const tag = release.tag_name;
   const version = tag.replace(/^v/, "");
-  Object.assign(out, { tag, version, date: release.published_at.slice(0, 10), release: release.html_url });
+  Object.assign(out, { tag, version, released: day(first), updated: release.published_at, release: release.html_url });
   const assets = release.assets.map((a) => a.name);
   const prefix = `${name}-${version}`;
   out.skill = assets.includes(`${prefix}-skill.zip`);
@@ -74,7 +87,6 @@ async function about(repo) {
   if (text === undefined) return { ...out, problem: `Its release ${tag} has no package.rant.` };
   const file = await parse(`${repo} package.rant at ${tag}`, text);
   if (file.name !== name) return { ...out, problem: `Its release ${tag} names the package ${file.name ?? "nothing"}, not ${name}.` };
-  out.nodes = Object.keys(file.node ?? {});
   // <name>-<version>-<platform>.tar.gz, <name>-<version>.vsix and <name>-<version>-skill.zip
   out.platforms = assets
     .filter((a) => a.startsWith(`${prefix}-`) && a.endsWith(".tar.gz"))

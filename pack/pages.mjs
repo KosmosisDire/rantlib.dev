@@ -1,10 +1,11 @@
 // Write the package viewer: the list of packages, and a right sidebar that shows the one picked with its README.
+import { LayoutGrid, Library, Package, Puzzle } from "lucide";
 import { Marked } from "marked";
 import { writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { escapeHtml } from "../docs/generate.mjs";
-import { loadPackages } from "./database.mjs";
+import { day, loadPackages } from "./database.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const attr = (s) => escapeHtml(s).replace(/"/g, "&quot;");
@@ -46,19 +47,41 @@ function readmeHtml(p) {
   return `<div class="readme">${marked.parse(text)}</div>`;
 }
 
+// A package's category, by what its release carries, and the categories in the order the sidebar lists them.
+const category = (p) => (p.languages ? "libraries" : p.vsix && !p.platforms?.length ? "extensions" : "packages");
+const categories = [
+  ["libraries", "Libraries", Library],
+  ["packages", "Packages", Package],
+  ["extensions", "VS Code extensions", Puzzle],
+];
+
+// A Lucide icon as markup, drawn as Lucide draws it in a page.
+const svg = (icon) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon
+    .map(([tag, attrs]) => `<${tag} ${Object.entries(attrs).map(([k, v]) => `${k}="${attr(String(v))}"`).join(" ")}/>`)
+    .join("")}</svg>`;
+
+// The empty key is All.
+function categoryButtons(packages) {
+  const button = (key, title, icon, count) =>
+    `<button type="button" data-category="${key}" aria-pressed="${!key}">${svg(icon)}<span class="title">${title}</span><span class="count">${count}</span></button>`;
+  const counted = categories.map(([key, title, icon]) => [key, title, icon, packages.filter((p) => category(p) === key).length]);
+  return [button("", "All", LayoutGrid, packages.length), ...counted.filter(([, , , count]) => count).map((c) => button(...c))].join("");
+}
+
 const row = (p) =>
-  `<a href="#${p.name}" data-package="${p.name}"><span class="name">${p.name}</span><span class="version">${p.version ?? ""}</span><span class="description">${escapeHtml(p.description || p.problem)}</span></a>`;
+  `<a href="#${p.name}" data-package="${p.name}" data-category="${category(p)}"><span class="name">${p.name}</span><span class="version">${p.version ?? ""}</span><span class="description">${escapeHtml(p.description || p.problem)}</span></a>`;
 
 // build.mjs puts the copy button in place of <!--copy-->.
 function details(p) {
   const facts = [
     p.version && ["Version", link(p.release, p.version)],
-    p.date && ["Released", p.date],
+    p.released && ["Released", p.released],
+    p.updated && ["Last updated", `<time datetime="${p.updated}">${day(p.updated)}</time>`],
     p.languages && ["Languages", escapeHtml(p.languages.join(", "))],
     p.platforms?.length && ["Platforms", escapeHtml(p.platforms.join(", "))],
     p.vsix && ["Editor", "VS Code, or another with <code>--editor</code>"],
-    p.skill && ["Skill", "Offered to the AI coding agents found, such as Claude Code"],
-    p.nodes?.length && ["Nodes", p.nodes.map((n) => `<code>${escapeHtml(n)}</code>`).join(", ")],
+    p.version && ["Skill", p.skill ? "Yes" : "No"],
     ["Source", link(`https://github.com/${p.repo}`, p.repo)],
   ].filter(Boolean);
   return [
@@ -77,7 +100,7 @@ function details(p) {
 export async function pages(out) {
   const packages = await loadPackages();
   for (const p of packages.filter((p) => p.problem)) console.warn(`pack: ${p.name}: ${p.problem}`);
-  const values = { list: packages.map(row).join(""), details: packages.map(details).join("") };
+  const values = { categories: categoryButtons(packages), list: packages.map(row).join(""), details: packages.map(details).join("") };
   // A function, so a $ in the content is not read as a replacement pattern.
   const html = readFileSync(join(here, "page.html"), "utf8").replace(/\{\{(\w+)\}\}/g, (_, key) => values[key]);
   // Any other address shows the list too.
