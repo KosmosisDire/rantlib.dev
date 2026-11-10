@@ -4,7 +4,7 @@ import { releaseFile } from "./source.mjs";
 import { slug } from "./slug.mjs";
 
 // Bump to the newest Rant release before a deploy. RANT_SOURCE=../rant reads a checkout instead.
-const version = "0.0.43";
+const version = "0.0.44";
 const file = "types/stdtypes.json";
 
 // { name, id, summary, details } plus fields for a struct, or alias for a type such as i64 or an enum, whose alias
