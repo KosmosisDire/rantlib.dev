@@ -52,7 +52,7 @@ async function readme(repo) {
 }
 
 const systems = { win: "Windows", linux: "Linux", osx: "macOS" };
-const languageNames = { cmake: "C and C++ through CMake", python: "Python", csharp: "C#", rust: "Rust" };
+const languageNames = { cmake: "C and C++ through CMake", python: "Python", csharp: "C#", rust: "Rust", plcnext: "PLCnext Engineer" };
 const platformName = (platform) => {
   const [system, arch] = platform.split("-");
   return systems[system] && arch ? `${systems[system]} ${arch}` : platform;
