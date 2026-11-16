@@ -29,6 +29,15 @@ node "camera" {
 Then `rant run Camera fps=60` picks the value, and `rant run Camera --help` lists
 the params.
 
+A node's names can move with `remap`, so a filter can stand between a node and its readers:
+
+```hcl
+node "ft_sensor" {
+  remap = { "Wrench" = "Wrench/Raw" }   # the sensor now publishes Wrench/Raw
+}
+node "wrench_filter" {}                 # reads Wrench/Raw, publishes Wrench
+```
+
 A node that should come back when it exits sets `restart`:
 
 ```hcl
