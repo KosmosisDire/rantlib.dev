@@ -11,7 +11,9 @@
     { "title": "Standard types", "path": "standard-types" }
   ] },
   { "title": "HMI", "pages": [
-    { "title": "Getting started", "path": "hmi-start", "from": "hmi/start.md" },
+    { "title": "Getting started", "path": "hmi-start", "from": "hmi/start.md" }
+  ] },
+  { "title": "HMI reference", "for": "llms", "pages": [
     { "title": "Project", "path": "hmi-project", "from": "hmi/project.md" },
     { "title": "Pages", "path": "hmi-pages", "from": "hmi/pages.md" },
     { "title": "Components", "path": "hmi-components", "from": "hmi/components.md" },

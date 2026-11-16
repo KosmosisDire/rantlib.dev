@@ -11,9 +11,11 @@ const projects = {
   hmi: (doc) => branchFile("KosmosisDire/rant-hmi", `docs/${doc}`, "HMI_SOURCE"),
 };
 
+// A group with "for": "llms" is only in the plain text copies. People see the other groups, and llms see every group.
 export async function loadPages(contentDir) {
   const groups = JSON.parse(readFileSync(join(contentDir, "nav.json"), "utf8"));
   const pages = groups.flatMap((g) => g.pages);
+  const people = groups.filter((g) => g.for !== "llms");
   const here = new Map(pages.filter((p) => p.from).map((p) => [p.from, p]));
   const sources = new Map();
   for (const p of pages) {
@@ -34,5 +36,5 @@ export async function loadPages(contentDir) {
     });
     sources.set(p.path, relinked);
   }
-  return { groups, pages, sources };
+  return { groups, pages, people, sources };
 }

@@ -50,8 +50,9 @@ function sections(page, tokens, types) {
 
 // `docs` is what loadPages read: the nav's groups, each page in them and its Markdown.
 export async function generate(contentDir, templateFile, outDir, origin, types, docs) {
-  const { groups, pages, sources } = docs;
+  const { groups, pages, people, sources } = docs;
   const paths = new Set(pages.map((p) => p.path));
+  const shown = people.flatMap((g) => g.pages);
 
   const codeHtml = (text, lang) => {
     if (lang && shiki.getLoadedLanguages().includes(lang)) return shiki.codeToHtml(text, { lang, theme: "rant" });
@@ -137,7 +138,7 @@ export async function generate(contentDir, templateFile, outDir, origin, types, 
 
   const template = readFileSync(templateFile, "utf8");
   const nav = (current) =>
-    groups
+    people
       .map((g) => `<h2>${g.title}</h2>` + g.pages.map((p) => `<a href="/${p.path}"${p.path === current ? ' class="current"' : ""}>${p.title}</a>`).join(""))
       .join("");
   // A function, so a $ in the content is not read as a replacement pattern.
@@ -146,13 +147,13 @@ export async function generate(contentDir, templateFile, outDir, origin, types, 
   // Images and other files sit beside the pages in content/ and keep their paths, so relative links work in the site and the .md copies.
   cpSync(contentDir, outDir, { recursive: true, filter: (src) => !src.endsWith(".md") && basename(src) !== "nav.json" });
 
-  for (const p of pages) {
+  for (const p of shown) {
     const content = marked.parser(tokens.get(p.path));
     writeFileSync(join(outDir, `${p.path}.html`), page({ title: `${p.title} | RANT Docs`, nav: nav(p.path), content }));
   }
   writeFileSync(join(outDir, "404.html"), page({ title: "Not found | RANT Docs", nav: nav(""), content: "<h1>Not found</h1><p>There is no such page.</p>" }));
-  writeFileSync(join(outDir, "_redirects"), `/ /${pages[0].path} 302\n`);
-  writeFileSync(join(outDir, "search.json"), JSON.stringify(pages.flatMap((p) => sections(p, tokens.get(p.path), types))));
+  writeFileSync(join(outDir, "_redirects"), `/ /${shown[0].path} 302\n`);
+  writeFileSync(join(outDir, "search.json"), JSON.stringify(shown.flatMap((p) => sections(p, tokens.get(p.path), types))));
 
   // In these copies, links between pages point at the Markdown too, so following them stays plain text.
   const toMarkdownLinks = (text) =>

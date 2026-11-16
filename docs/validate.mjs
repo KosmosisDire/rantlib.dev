@@ -8,12 +8,17 @@ import { typeNames } from "./types.mjs";
 // `docs` is what loadPages read: each page in nav.json and its Markdown.
 export function validate(contentDir, types, docs) {
   const errors = [];
+  const seen = new Set(docs.people.flatMap((g) => g.pages.map((page) => page.path)));
   const paths = docs.pages.map((page) => page.path);
   const local = docs.pages.filter((page) => !page.from).map((page) => page.path);
   const files = readdirSync(contentDir).filter((f) => f.endsWith(".md")).map((f) => f.slice(0, -3));
   // where a problem is: the file in content/, or the doc read from a release
   const where = new Map(docs.pages.map((page) => [page.path, page.from ?? `${page.path}.md`]));
 
+  for (const group of docs.groups) {
+    if (group.for !== undefined && group.for !== "llms") errors.push(`nav.json: group "${group.title}" is for "${group.for}", which is not llms`);
+  }
+  if (!seen.size) errors.push("nav.json: no group is for people");
   for (const path of paths) {
     if (paths.indexOf(path) !== paths.lastIndexOf(path)) errors.push(`nav.json: "${path}" is listed twice`);
   }
@@ -39,6 +44,7 @@ export function validate(contentDir, types, docs) {
       for (const token of tokens) {
         if (token.type === "heading") anchor(slug(token.text));
         if (token.type === "code" && token.lang === "types") {
+          if (!seen.has(path)) errors.push(`${where.get(path)}: a types block is on a page only llms see`);
           for (const name of typeNames(token.text)) {
             if (!types.has(name)) errors.push(`${where.get(path)}: ${name} is not a standard type`);
             else if (listed.has(name)) errors.push(`${where.get(path)}: ${name} is already listed in ${where.get(listed.get(name))}`);
@@ -52,6 +58,7 @@ export function validate(contentDir, types, docs) {
         if (token.type === "image") images.push(token.href);
         walk(token.tokens ?? []);
         for (const item of token.items ?? []) walk(item.tokens ?? []);
+        for (const cell of [...(token.header ?? []), ...(token.rows ?? []).flat()]) walk(cell.tokens);
       }
     };
     walk(Lexer.lex(docs.sources.get(path)));
@@ -80,6 +87,7 @@ export function validate(contentDir, types, docs) {
       const targetPath = target ? target.slice(1) : path;
       const page = pages.get(targetPath);
       if (!page) errors.push(`${where.get(path)}: link "${href}" goes to a page that does not exist`);
+      else if (seen.has(path) && !seen.has(targetPath)) errors.push(`${where.get(path)}: link "${href}" goes to a page only llms see`);
       else if (anchor && !page.ids.has(anchor)) errors.push(`${where.get(path)}: link "${href}" has no heading #${anchor} on that page`);
     }
   }
