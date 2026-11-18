@@ -38,7 +38,7 @@ $ rant ls nodes
   Example/talker    [38;2;154;154;154mpython[0m  [38;2;154;154;154msrc/talker.py[0m
 ```
 
-The example includes one group file `Example.run`. This defines a node group that runs together.
+The example includes one run group: `Example.run`. This defines a node group that runs together.
 Start it:
 
 ```console
