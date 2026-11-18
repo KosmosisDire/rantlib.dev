@@ -80,13 +80,15 @@ rant remove explorer
 ```sh
 rant add                       # Rant into the package here
 rant add rant cam --version 0.0.39
+rant install rant math         # in the Arduino sketchbook, for every sketch
+rant install plcnext           # in PLCnext Engineer's user libraries
 rant ls libraries              # what each package uses
 ```
 
 ## Keep it current
 
 ```sh
-rant update          # the CLI, installed packages and your packages' libraries
+rant update          # the CLI, installed packages and libraries
 rant setup           # tab completion for your shell
 rant uninstall       # remove it all, workspaces stay
 ```
