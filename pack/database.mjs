@@ -52,13 +52,15 @@ async function readme(repo) {
 }
 
 const systems = { win: "Windows", linux: "Linux", osx: "macOS" };
-const languageNames = { cmake: "C and C++ through CMake", python: "Python", csharp: "C#", rust: "Rust", plcnext: "PLCnext Engineer" };
+// The keys of a library block that rant add and rant install know
+const libraryKeys = ["cmake", "python", "csharp", "rust", "plcnext"];
 const platformName = (platform) => {
   const [system, arch] = platform.split("-");
   return systems[system] && arch ? `${systems[system]} ${arch}` : platform;
 };
 
-// { name, repo, tag, description, version, released, updated, release, platforms, vsix, skill, languages, readme }.
+// { name, repo, tag, description, version, released, updated, release, platforms, vsix, skill, targets, readme }.
+// targets are a library's: the keys its library block gives, and arduino when the release carries <name>-<version>-arduino.zip.
 // released is the first release's day and updated the latest release's time. A problem
 // says why rant install or rant add could not take it, and then some of the rest may be missing.
 async function about(repo) {
@@ -80,7 +82,8 @@ async function about(repo) {
   // A library is added by the names its package.rant gives on main, as rant add reads them
   const library = current.library?.[0];
   if (library) {
-    out.languages = Object.entries(languageNames).filter(([key]) => library[key]).map(([, shown]) => shown);
+    out.targets = libraryKeys.filter((key) => library[key]);
+    if (assets.includes(`${prefix}-arduino.zip`)) out.targets.push("arduino");
     return out;
   }
   const text = await get(raw(repo, tag, "package.rant")).then((r) => r?.text());

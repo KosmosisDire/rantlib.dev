@@ -48,7 +48,7 @@ function readmeHtml(p) {
 }
 
 // A package's category, by what its release carries, and the categories in the order the sidebar lists them.
-const category = (p) => (p.languages ? "libraries" : p.vsix && !p.platforms?.length ? "extensions" : "packages");
+const category = (p) => (p.targets ? "libraries" : p.vsix && !p.platforms?.length ? "extensions" : "packages");
 const categories = [
   ["libraries", "Libraries", Library],
   ["packages", "Packages", Package],
@@ -72,13 +72,33 @@ function categoryButtons(packages) {
 const row = (p) =>
   `<a href="#${p.name}" data-package="${p.name}" data-category="${category(p)}"><span class="name">${p.name}</span><span class="version">${p.version ?? ""}</span><span class="description">${escapeHtml(p.description || p.problem)}</span></a>`;
 
+// A library's targets as the project types rant add puts it in, and as the places rant install puts it for every
+// project on this machine.
+const projectNames = { cmake: "CMake", python: "Python", csharp: "C#", rust: "Rust", arduino: "PlatformIO", plcnext: "plcx workspace" };
+const machineNames = { arduino: "Arduino IDE", plcnext: "PLCnext Engineer" };
+const named = (targets, names) => targets.filter((t) => names[t]).map((t) => names[t]);
+
 // build.mjs puts the copy button in place of <!--copy-->.
+const command = (text) => `<div class="code-block"><code>${escapeHtml(text)}</code><!--copy--></div>`;
+
+// A library shows rant add under the project types it goes in, and rant install under the places it goes for every
+// project, when it has any. Any other package shows only rant install.
+function commands(p) {
+  if (!p.targets) return command(`rant install ${p.name}`);
+  const heading = (title, names) => `<h3 class="command">${title}: <strong>${escapeHtml(names.join(", "))}</strong></h3>`;
+  const projects = named(p.targets, projectNames);
+  const machine = named(p.targets, machineNames);
+  return [
+    projects.length && heading("Add to the project here", projects) + command(`rant add ${p.name}`),
+    machine.length && heading("Install for every project on this machine", machine) + command(`rant install ${p.name}`),
+  ].filter(Boolean).join("");
+}
+
 function details(p) {
   const facts = [
     p.version && ["Version", link(p.release, p.version)],
     p.released && ["Released", p.released],
     p.updated && ["Last updated", `<time datetime="${p.updated}">${day(p.updated)}</time>`],
-    p.languages && ["Languages", escapeHtml(p.languages.join(", "))],
     p.platforms?.length && ["Platforms", escapeHtml(p.platforms.join(", "))],
     p.vsix && ["Editor", "VS Code, or another with <code>--editor</code>"],
     p.version && ["Skill", p.skill ? "Yes" : "No"],
@@ -90,7 +110,7 @@ function details(p) {
     p.description && `<p class="lead">${escapeHtml(p.description)}</p>`,
     p.problem
       ? `<p class="problem">${escapeHtml(p.problem)} <code>rant install</code> cannot install it until a release fixes that.</p>`
-      : `<div class="code-block"><code>rant ${p.languages ? "add" : "install"} ${p.name}</code><!--copy--></div>`,
+      : commands(p),
     `<dl class="facts">${facts.map(([term, value]) => `<dt>${term}</dt><dd>${value}</dd>`).join("")}</dl>`,
     p.readme && readmeHtml(p),
     "</section>",

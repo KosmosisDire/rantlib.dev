@@ -259,6 +259,22 @@ main {
   color: var(--muted);
 }
 
+.command {
+  margin: 1rem 0 0.4rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.command strong {
+  color: var(--title);
+  font-weight: 700;
+}
+
+.command:first-of-type {
+  margin-top: 0;
+}
+
 .code-block {
   display: flex;
   align-items: center;
