@@ -29,6 +29,19 @@ node "camera" {
 Then `rant run Camera fps=60` picks the value, and `rant run Camera --help` lists
 the params.
 
+A group can start another group with `include`:
+
+```hcl
+include "Arm" {
+  side        = "left"     # sets a param of Arm
+  node_prefix = "left"     # its nodes become left/..., so two arms can run
+  expose      = ["speed"]  # Arm's speed becomes a param of this group
+}
+```
+
+`expose = true` passes up every param of Arm left unset here. An include also takes
+`domain`, `prefix` and `restart`. `rant run` takes the same keys: `rant run Arm side=left domain=3`.
+
 A node's names can move with `remap`, so a filter can stand between a node and its readers:
 
 ```hcl

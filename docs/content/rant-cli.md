@@ -17,14 +17,24 @@ rant stop ExampleGroup             # stop them
 
 ## Run at every boot
 
-A workspace lists its services in `workspace.rant`, each a group with its param values:
+A workspace lists its services in `workspace.rant`, each a group with what an include takes:
+param values, `domain`, `prefix`, `node_prefix` and `restart`.
 
 ```hcl
 service "ExampleGroup" {}
 service "Hmi" {
   project = "line-hmi"
 }
+service "Hmi" {
+  project     = "test-hmi"
+  port        = 6770
+  domain      = 3
+  node_prefix = "test"   # test/hmi, so it runs beside the first
+}
 ```
+
+Two services of one group need a `node_prefix` on one of them, since a workspace runs one node
+of each name.
 
 ```sh
 rant run                    # start every service now
